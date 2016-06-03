@@ -1,6 +1,7 @@
 PerelTrains
 ==========
 PerelTrains hopes to emulate the train system from Factorio in Minecraft.
+- [![Build Status](https://travis-ci.org/TechShroom/PerelTrains.svg?branch=master)](https://travis-ci.org/TechShroom/PerelTrains)
 
 Developing:
 ----------
