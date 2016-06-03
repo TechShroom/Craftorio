@@ -1,0 +1,110 @@
+buildscript {
+    repositories {
+        jcenter()
+        mavenCentral()
+        maven {
+            name "sonatype-snapshots"
+            url "https://oss.sonatype.org/content/repositories/snapshots/"
+        }
+        maven {
+            name "techshroom-maven"
+            url "http://techshroom.github.io/downloads/maven"
+        }
+        maven {
+            name "forge"
+            url "http://files.minecraftforge.net/maven"
+        }
+        maven {
+            name "plugins-gradle"
+            url "https://plugins.gradle.org/m2/"
+        }
+    }
+
+    configurations.all {
+        resolutionStrategy {
+            cacheChangingModulesFor 0, 'seconds'
+        }
+    }
+
+    dependencies {
+        classpath group: 'com.github.ben-manes', name: 'gradle-versions-plugin', version: '0.12.0'
+        classpath 'net.minecraftforge.gradle:ForgeGradle:2.2-SNAPSHOT'
+        classpath group: 'com.techshroom', name: 'Aversion', version: '2.0.1'
+    }
+}
+
+apply plugin: 'net.minecraftforge.gradle.forge'
+apply plugin: 'com.github.ben-manes.versions'
+apply plugin: 'aversion-apt'
+apply plugin: 'aversion-maven'
+apply plugin: 'aversion-util'
+
+util {
+    javaVersion = '1.8'
+}
+
+mavencfg {
+    description 'Factorio trains in Minecraft.'
+    coords 'TechShroom', 'PerelTrains'
+}
+
+idea.project.languageLevel = util.javaVersion
+
+repositories {
+    mavenCentral()
+    maven {
+        name "central snapshots"
+        url "https://oss.sonatype.org/content/repositories/snapshots/"
+    }
+}
+group = "com.techshroom"
+archivesBaseName = "PerelTrains"
+
+ext.configFile = file "build.properties"
+configFile.withReader {
+    def prop = new Properties()
+    prop.load(it)
+    project.ext.config = new ConfigSlurper().parse prop
+}
+
+dependencies {
+
+    compile group: 'com.flowpowered', name: 'flow-math', version: '1.0.2'
+    compile group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.6'
+    compile group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.6'
+    addAPTReqWComp group: 'com.google.guava', name: 'guava', version: '19.0'
+    addAPT group: 'com.google.auto.factory', name: 'auto-factory', version: '1.0-SNAPSHOT'
+    addAPT group: 'com.google.auto.service', name: 'auto-service', version: '1.0-SNAPSHOT'
+    addAPT group: 'com.google.auto.value', name: 'auto-value', version: '1.3-SNAPSHOT'
+    addAPTReq name: 'aopalliance'
+    addAPTReq name: 'asm'
+    addAPTReq name: 'auto-value'
+    addAPTReq name: 'auto-common'
+    addAPTReq name: 'cglib'
+    addAPTReq name: 'commons-collections'
+    addAPTReq name: 'commons-lang'
+    addAPTReq name: 'dagger'
+    addAPTReq name: 'javawriter'
+    addAPTReq name: 'javax.inject'
+    addAPTReq name: 'velocity'
+
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+}
+
+def build_number = (System.getenv("BUILD_NUMBER") ?: null)
+// VERSION IS:
+// <MOD_VERSION>+<MC_VERSION>-<BUILD_META>-build<BUILD_NUMBER (if present)>
+// This ensures that it is easy to identify what MC version the mod is for
+version =  "${project.config.mod.version}+${project.config.mc.version}-${project.config.mod.buildmeta}" +
+                (build_number ? "-build" + build_number : "")
+minecraft {
+    version = config.mc.version + "-" + config.forge.version
+    runDir = './run'
+    replace '@VERSION@': version
+    replace '@MC_VERSION@': config.mc.version
+    replace '@FORGE_VERSION@': config.forge.version
+    mappings "snapshot_20160603"
+}
+
+// did u know that AT checking is bad
+[tasks.deobfMcMCP, tasks.deobfMcSRG].each { it.failOnAtError = false }
