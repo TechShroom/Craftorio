@@ -35,6 +35,7 @@ buildscript {
 
 apply plugin: 'net.minecraftforge.gradle.forge'
 apply plugin: 'com.github.ben-manes.versions'
+apply plugin: 'jacoco'
 apply plugin: 'aversion-apt'
 apply plugin: 'aversion-maven'
 apply plugin: 'aversion-util'
@@ -105,6 +106,18 @@ minecraft {
     replace '@FORGE_VERSION@': config.forge.version
     mappings "snapshot_20160603"
 }
+
+compileJava {
+    options.incremental = true
+}
+
+jacocoTestReport {
+    reports {
+        xml.enabled = true
+        html.enabled = true
+    }
+}
+check.dependsOn jacocoTestReport
 
 // did u know that AT checking is bad
 [tasks.deobfMcMCP, tasks.deobfMcSRG].each { it.failOnAtError = false }
