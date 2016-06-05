@@ -1,0 +1,12 @@
+
+itemGroup.perel=Perel Trains
+
+item.drillhead[0].name=Wooden Drillhead
+item.drillhead[1].name=Iron Drillhead
+item.drillhead[2].name=Diamond Drillhead
+
+tile.drill.name=Drill
+tile.ejector.name=Item Ejector
+tile.cargo.name=Cargo Storage
+tile.cpu.name=CPU
+tile.engine.name=Engine
