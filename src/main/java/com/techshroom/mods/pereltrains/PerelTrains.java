@@ -33,6 +33,7 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.Mod.Instance;
 import net.minecraftforge.fml.common.SidedProxy;
+import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 
 @Mod(modid = Constants.MOD_ID, version = Constants.VERSION,
@@ -67,6 +68,11 @@ public final class PerelTrains {
     @EventHandler
     public void onPreInit(FMLPreInitializationEvent event) {
         getProxy().onPreInit();
+    }
+
+    @EventHandler
+    public void onInit(FMLInitializationEvent event) {
+        getProxy().onInit();
     }
 
 }

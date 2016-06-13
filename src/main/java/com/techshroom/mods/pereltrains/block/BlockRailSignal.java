@@ -24,37 +24,190 @@
  */
 package com.techshroom.mods.pereltrains.block;
 
-import com.techshroom.mods.pereltrains.block.entity.TileEntityRailSignal;
+import javax.annotation.Nullable;
+
+import com.techshroom.mods.pereltrains.Constants;
 import com.techshroom.mods.pereltrains.util.BlockLocator;
 
-import net.minecraft.block.ITileEntityProvider;
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockHorizontal;
 import net.minecraft.block.material.Material;
-import net.minecraft.init.Blocks;
-import net.minecraft.tileentity.TileEntity;
+import net.minecraft.block.properties.PropertyDirection;
+import net.minecraft.block.properties.PropertyEnum;
+import net.minecraft.block.state.BlockStateContainer;
+import net.minecraft.block.state.IBlockState;
+import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.util.EnumFacing;
+import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 
-public class BlockRailSignal extends ExtendedBlock
-        implements ITileEntityProvider {
+public class BlockRailSignal extends ExtendedBlock {
 
+    public static final PropertyEnum<LightValue> LIGHT_PROPERTY = PropertyEnum
+            .create(Constants.LIGHT_PROPERTY_NAME, LightValue.class);
+    private static final PropertyEnum<EnumFacing> FACING_PRORERTY =
+            BlockHorizontal.FACING;
+    public static final PropertyEnum<EnumFacing> ATTACHED_RAIL_PROPERTY =
+            PropertyDirection.create("attached", EnumFacing.Plane.HORIZONTAL);
+    private static final double BLOCK_WIDTH = 16;
+    private static final AxisAlignedBB AABB =
+            new AxisAlignedBB(4 / BLOCK_WIDTH, 0 / BLOCK_WIDTH, 4 / BLOCK_WIDTH,
+                    12 / BLOCK_WIDTH, 14 / BLOCK_WIDTH, 12 / BLOCK_WIDTH);
     private static final BlockLocator RAIL_LOCATOR =
-            BlockLocator.forBlock(Blocks.RAIL).checkAllStates(true);
+            BlockLocator.forBlock(PerelBlocks.NORMAL_RAIL).checkAllStates(true);
 
     protected BlockRailSignal() {
         super(Material.IRON, "rail_signal");
     }
 
     @Override
-    public TileEntity createNewTileEntity(World worldIn, int meta) {
-        return new TileEntityRailSignal();
+    protected BlockStateContainer createBlockState() {
+        return new BlockStateContainer.Builder(this)
+                .add(LIGHT_PROPERTY, FACING_PRORERTY, ATTACHED_RAIL_PROPERTY)
+                .build();
+    }
+
+    @SuppressWarnings("deprecation")
+    @Override
+    public IBlockState getStateFromMeta(int meta) {
+        int light = meta & 0b11;
+        int attached = (meta >> 2) & 0b11;
+        return getDefaultState()
+                .withProperty(LIGHT_PROPERTY, LightValue.values()[light])
+                .withProperty(ATTACHED_RAIL_PROPERTY,
+                        EnumFacing.HORIZONTALS[attached]);
+    }
+
+    @Override
+    public int getMetaFromState(IBlockState state) {
+        return state.getValue(LIGHT_PROPERTY).ordinal() + (state
+                .getValue(ATTACHED_RAIL_PROPERTY).getHorizontalIndex() << 2);
+    }
+
+    @SuppressWarnings("deprecation")
+    @Override
+    public IBlockState getActualState(IBlockState state, IBlockAccess worldIn,
+            BlockPos pos) {
+        return state.withProperty(FACING_PRORERTY,
+                calculateFacingFromState(state));
+    }
+
+    private EnumFacing calculateFacingFromState(IBlockState state) {
+        EnumFacing railFace = state.getValue(ATTACHED_RAIL_PROPERTY);
+        // Following factorio rules:
+        // Signals north of the rails face west
+        // Signals south of the rails face east
+        // Signals west of the rails face south
+        // Signals east of the rails face north
+        switch (railFace.getOpposite()) {
+            case NORTH:
+                return EnumFacing.WEST;
+            case SOUTH:
+                return EnumFacing.EAST;
+            case WEST:
+                return EnumFacing.SOUTH;
+            case EAST:
+                return EnumFacing.NORTH;
+            default:
+                throw new IllegalStateException(
+                        "non-standard rail-face " + railFace);
+        }
+    }
+
+    private EnumFacing findRail(IBlockAccess worldIn, BlockPos pos) {
+        for (EnumFacing facing : EnumFacing.HORIZONTALS) {
+            IBlockState state = worldIn.getBlockState(pos.offset(facing));
+            if (BlockAutoRailBase.isRailBlock(state)) {
+                return facing;
+            }
+        }
+        throw new IllegalStateException("No rail near " + pos);
+    }
+
+    @SuppressWarnings("deprecation")
+    @Override
+    public AxisAlignedBB getCollisionBoundingBox(IBlockState blockState,
+            World worldIn, BlockPos pos) {
+        return AABB;
+    }
+
+    @SuppressWarnings("deprecation")
+    @Override
+    public AxisAlignedBB getBoundingBox(IBlockState state, IBlockAccess source,
+            BlockPos pos) {
+        return AABB;
     }
 
     @Override
     public boolean canPlaceBlockAt(World worldIn, BlockPos pos) {
-        if (!RAIL_LOCATOR.touchingHorizontal(worldIn, pos)) {
+        if (!validatePosition(worldIn, pos, null)) {
             return false;
         }
         return super.canPlaceBlockAt(worldIn, pos);
+    }
+
+    private boolean validatePosition(IBlockAccess worldIn, BlockPos pos,
+            @Nullable IBlockState placedState) {
+        if (!RAIL_LOCATOR.touchingHorizontal(worldIn, pos)) {
+            return false;
+        }
+        if (placedState != null) {
+            // we can validate our rail here
+            if (!BlockAutoRailBase.isRailBlock(worldIn.getBlockState(pos
+                    .offset(placedState.getValue(ATTACHED_RAIL_PROPERTY))))) {
+                // no rail
+                return false;
+            }
+        }
+        IBlockState state = worldIn.getBlockState(pos.down());
+        // We're like...a torch, right?
+        if (!state.getBlock().canPlaceTorchOnTop(state, worldIn, pos)) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public IBlockState onBlockPlaced(World worldIn, BlockPos pos,
+            EnumFacing facing, float hitX, float hitY, float hitZ, int meta,
+            EntityLivingBase placer) {
+        IBlockState base = super.onBlockPlaced(worldIn, pos, facing, hitX, hitY,
+                hitZ, meta, placer);
+
+        // add the attached rail now
+        EnumFacing railFacingSignal = findRail(worldIn, pos);
+        base = base.withProperty(ATTACHED_RAIL_PROPERTY, railFacingSignal);
+        return base;
+    }
+
+    @SuppressWarnings("deprecation")
+    @Override
+    public void neighborChanged(IBlockState state, World world, BlockPos pos,
+            Block blockIn) {
+        if (!validatePosition(world, pos, state)) {
+            // explode!
+            world.destroyBlock(pos, true);
+        }
+    }
+
+    @Override
+    public int getLightValue(IBlockState state, IBlockAccess world,
+            BlockPos pos) {
+        return state.getValue(LIGHT_PROPERTY) == LightValue.NONE ? 0 : 10;
+    }
+
+    @SuppressWarnings("deprecation")
+    @Override
+    public boolean isOpaqueCube(IBlockState state) {
+        return false;
+    }
+
+    @SuppressWarnings("deprecation")
+    @Override
+    public boolean isFullCube(IBlockState state) {
+        return false;
     }
 
 }

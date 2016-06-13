@@ -22,16 +22,9 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.techshroom.mods.pereltrains;
 
-public final class Constants {
-
-    public static final String MOD_ID = "pereltrains";
-    public static final String VERSION = "@VERSION@";
-    public static final String NAME = "Perel Trains";
-    public static final String LIGHT_PROPERTY_NAME = "light";
-
-    private Constants() {
-    }
-
-}
+/**
+ * This package provides the classes that emulate the idea of railway blocks
+ * from Factorio. In PerelTrains, they are referred to as segments.
+ */
+package com.techshroom.mods.pereltrains.segment;

@@ -22,16 +22,18 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.techshroom.mods.pereltrains;
+package com.techshroom.mods.pereltrains.block;
 
-public final class Constants {
+import java.util.Locale;
 
-    public static final String MOD_ID = "pereltrains";
-    public static final String VERSION = "@VERSION@";
-    public static final String NAME = "Perel Trains";
-    public static final String LIGHT_PROPERTY_NAME = "light";
+import net.minecraft.util.IStringSerializable;
 
-    private Constants() {
+public enum LightValue implements IStringSerializable {
+    NONE, GREEN, YELLOW, RED;
+
+    @Override
+    public String getName() {
+        return name().toLowerCase(Locale.ENGLISH);
     }
 
 }

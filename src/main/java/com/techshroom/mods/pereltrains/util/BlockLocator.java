@@ -44,13 +44,8 @@ public class BlockLocator {
 
     }
 
-    private static final TwoInt[] HORIZONTAL_OFFSETS = {
-            // Horizontal touches via facing
-            new TwoInt(-1, 0), new TwoInt(1, 0), new TwoInt(0, 1),
-            new TwoInt(0, 1),
-            // Horizontal touches diagonally
-            new TwoInt(-1, -1), new TwoInt(1, 1), new TwoInt(1, -1),
-            new TwoInt(-1, 1) };
+    private static final TwoInt[] HORIZONTAL_OFFSETS = { new TwoInt(-1, 0),
+            new TwoInt(1, 0), new TwoInt(0, -1), new TwoInt(0, 1) };
 
     public static BlockLocator forBlock(Block block) {
         return forState(block.getDefaultState());

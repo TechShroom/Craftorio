@@ -24,14 +24,23 @@
  */
 package com.techshroom.mods.pereltrains.block;
 
+import java.awt.Color;
+
+import javax.annotation.Nullable;
+
 import com.techshroom.mods.pereltrains.Constants;
-import com.techshroom.mods.pereltrains.PerelTrains;
-import com.techshroom.mods.pereltrains.block.entity.TileEntityRailSignal;
+import com.techshroom.mods.pereltrains.block.entity.TileEntityAutoRailNormal;
 
 import net.minecraft.block.Block;
+import net.minecraft.block.properties.IProperty;
+import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.Minecraft;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
+import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.IBlockAccess;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 
 public final class PerelBlocks {
@@ -46,21 +55,76 @@ public final class PerelBlocks {
     };
 
     public static final BlockRailSignal RAIL_SIGNAL = new BlockRailSignal();
+    public static final BlockAutoRailNormal NORMAL_RAIL =
+            new BlockAutoRailNormal();
 
-    public static void load() {
-        // Doesn't actually do anything.
-        register(new BlockRailSignal(), "rail_signal");
-        GameRegistry.registerTileEntity(TileEntityRailSignal.class,
-                "rail_signal");
+    public static void registerBlocks() {
+        register(RAIL_SIGNAL, "rail_signal");
+        register(NORMAL_RAIL, "normal_rail", TileEntityAutoRailNormal.class);
+    }
+
+    public static void loadColorHandlers() {
+        Minecraft.getMinecraft().getBlockColors().registerBlockColorHandler(
+                PerelBlocks::signalColorHandler, RAIL_SIGNAL);
+    }
+
+    private static int onColor(Color c) {
+        return c.brighter().brighter().brighter().getRGB();
+    }
+
+    private static int offColor(Color c) {
+        return c.darker().darker().darker().getRGB();
+    }
+
+    private static final int RED_ON = onColor(Color.RED);
+    private static final int RED_OFF = offColor(Color.RED);
+    private static final int YELLOW_ON = onColor(Color.YELLOW);
+    private static final int YELLOW_OFF = offColor(Color.YELLOW);
+    private static final int GREEN_ON = onColor(Color.GREEN);
+    private static final int GREEN_OFF = offColor(Color.GREEN);
+
+    private static int signalColorHandler(IBlockState state,
+            @Nullable IBlockAccess worldIn, @Nullable BlockPos pos,
+            int tintIndex) {
+        LightValue light = state.getValue(findLightValueProp(state));
+        switch (tintIndex) {
+            case 0:
+                // GREEN
+                return light == LightValue.GREEN ? GREEN_ON : GREEN_OFF;
+            case 1:
+                // YELLOW
+                return light == LightValue.YELLOW ? YELLOW_ON : YELLOW_OFF;
+            case 2:
+                // RED
+                return light == LightValue.RED ? RED_ON : RED_OFF;
+            default:
+                throw new IllegalStateException("bad tintIndex " + tintIndex);
+        }
+    }
+
+    public static IProperty<LightValue> findLightValueProp(IBlockState state) {
+        for (IProperty<?> prop : state.getPropertyNames()) {
+            if (prop.getName().equals(Constants.LIGHT_PROPERTY_NAME)) {
+                @SuppressWarnings("unchecked")
+                IProperty<LightValue> propCast = (IProperty<LightValue>) prop;
+                return propCast;
+            }
+        }
+        throw new IllegalStateException(
+                "State " + state + " has no light property!");
     }
 
     private static void register(Block block, String name) {
-        block.setRegistryName(Constants.MOD_ID, name);
-        GameRegistry.register(block);
+        block.setCreativeTab(TAB);
+        GameRegistry.register(block.setRegistryName(Constants.MOD_ID, name));
         GameRegistry.register(
                 new ItemBlock(block).setRegistryName(Constants.MOD_ID, name));
-        PerelTrains.getLogger().info("I have registered "
-                + block.getRegistryName() + "/" + block.getUnlocalizedName());
+    }
+
+    private static void register(Block block, String name,
+            Class<? extends TileEntity> tileClass) {
+        register(block, name);
+        GameRegistry.registerTileEntity(tileClass, name);
     }
 
     private PerelBlocks() {

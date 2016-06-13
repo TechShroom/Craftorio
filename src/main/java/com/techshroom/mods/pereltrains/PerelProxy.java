@@ -50,10 +50,19 @@ public class PerelProxy {
             }
         }
 
+        @Override
+        public void onInit() {
+            super.onInit();
+            PerelBlocks.loadColorHandlers();
+        }
+
     }
 
     public void onPreInit() {
-        PerelBlocks.load();
+        PerelBlocks.registerBlocks();
+    }
+
+    public void onInit() {
     }
 
 }
