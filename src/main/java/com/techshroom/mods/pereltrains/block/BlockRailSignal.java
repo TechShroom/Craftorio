@@ -55,8 +55,6 @@ public class BlockRailSignal extends ExtendedBlock {
     private static final AxisAlignedBB AABB =
             new AxisAlignedBB(4 / BLOCK_WIDTH, 0 / BLOCK_WIDTH, 4 / BLOCK_WIDTH,
                     12 / BLOCK_WIDTH, 14 / BLOCK_WIDTH, 12 / BLOCK_WIDTH);
-    private static final BlockLocator RAIL_LOCATOR =
-            BlockLocator.forBlock(PerelBlocks.NORMAL_RAIL).checkAllStates(true);
 
     protected BlockRailSignal() {
         super(Material.IRON, "rail_signal");
@@ -150,7 +148,8 @@ public class BlockRailSignal extends ExtendedBlock {
 
     private boolean validatePosition(IBlockAccess worldIn, BlockPos pos,
             @Nullable IBlockState placedState) {
-        if (!RAIL_LOCATOR.touchingHorizontal(worldIn, pos)) {
+        if (!BlockLocator.forBlock(PerelBlocks.NORMAL_RAIL).checkAllStates(true)
+                .touchingHorizontal(worldIn, pos)) {
             return false;
         }
         if (placedState != null) {
