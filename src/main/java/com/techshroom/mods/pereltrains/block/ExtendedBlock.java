@@ -68,7 +68,8 @@ public abstract class ExtendedBlock extends Block {
         ModelLoader.setCustomModelResourceLocation(Item.getItemFromBlock(this),
                 0,
                 new ModelResourceLocation(
-                        GeneralUtility.addressMod(getUnlocalizedName()),
+                        GeneralUtility.addressMod(
+                                getRegistryName().getResourcePath()),
                         inventoryVariant));
     }
 

@@ -38,6 +38,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
+import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
@@ -66,6 +67,8 @@ public final class PerelBlocks {
     public static void loadColorHandlers() {
         Minecraft.getMinecraft().getBlockColors().registerBlockColorHandler(
                 PerelBlocks::signalColorHandler, RAIL_SIGNAL);
+        Minecraft.getMinecraft().getItemColors().registerItemColorHandler(
+                PerelBlocks::signalColorHandler, RAIL_SIGNAL);
     }
 
     private static int onColor(Color c) {
@@ -86,6 +89,26 @@ public final class PerelBlocks {
     private static int signalColorHandler(IBlockState state,
             @Nullable IBlockAccess worldIn, @Nullable BlockPos pos,
             int tintIndex) {
+        return getTintIndex(state, tintIndex);
+    }
+    
+    private static int signalColorHandler(ItemStack stack, int tintIndex) {
+        // Probably an ItemBlock
+        if (stack.getItem() instanceof ItemBlock) {
+            return signalColorHandler((ItemBlock) stack.getItem(), stack.getMetadata(), tintIndex);
+        } else {
+            throw new UnsupportedOperationException("unimplemented handling of " + stack);
+        }
+    }
+
+    private static int signalColorHandler(ItemBlock item, int metadata,
+            int tintIndex) {
+        @SuppressWarnings("deprecation")
+        IBlockState state = item.block.getStateFromMeta(metadata);
+        return getTintIndex(state, tintIndex);
+    }
+
+    private static int getTintIndex(IBlockState state, int tintIndex) {
         LightValue light = state.getValue(findLightValueProp(state));
         switch (tintIndex) {
             case 0:
