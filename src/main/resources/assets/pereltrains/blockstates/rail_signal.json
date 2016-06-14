@@ -7,12 +7,16 @@
     "variants": {
         "light": {
             "green": {
+                
             },
             "yellow": {
+                
             },
             "red": {
+                
             },
             "none": {
+                
             }
         },
         "facing": {
@@ -34,12 +38,16 @@
         },
         "attached": {
             "north": {
+                
             },
             "south": {
+                
             },
             "east": {
+                
             },
             "west": {
+                
             }
         }
     }

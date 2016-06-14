@@ -28,6 +28,7 @@ import javax.annotation.Nullable;
 
 import com.techshroom.mods.pereltrains.Constants;
 import com.techshroom.mods.pereltrains.util.BlockLocator;
+import com.techshroom.mods.pereltrains.util.GeneralUtility;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockHorizontal;
@@ -58,6 +59,10 @@ public class BlockRailSignal extends ExtendedBlock {
 
     protected BlockRailSignal() {
         super(Material.IRON, "rail_signal");
+        IBlockState defaultState = getDefaultState();
+        setDefaultState(defaultState.withProperty(FACING_PRORERTY,
+                calculateFacingFromState(defaultState)));
+        System.err.println("THE DEFAULT STATE " + getDefaultState());
     }
 
     @Override
@@ -207,6 +212,11 @@ public class BlockRailSignal extends ExtendedBlock {
     @Override
     public boolean isFullCube(IBlockState state) {
         return false;
+    }
+
+    @Override
+    protected String getInventoryVariant() {
+        return GeneralUtility.getVariantString(getDefaultState());
     }
 
 }

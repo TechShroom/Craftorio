@@ -34,6 +34,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
 
 import com.techshroom.mods.pereltrains.Constants;
@@ -43,6 +44,7 @@ import com.techshroom.mods.pereltrains.block.ExtendedBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockPistonBase;
 import net.minecraft.block.BlockSourceImpl;
+import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.properties.PropertyDirection;
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
@@ -540,6 +542,38 @@ public final class GeneralUtility {
         copy.readFromNBT(copyTag);
         w.setBlockState(pos, w.getBlockState(pos));
         w.setTileEntity(pos, copy);
+    }
+
+    public static String getVariantString(IBlockState state) {
+        return getPropertyString(state.getProperties());
+    }
+
+    private static String
+            getPropertyString(Map<IProperty<?>, Comparable<?>> values) {
+        StringBuilder stringbuilder = new StringBuilder();
+
+        for (Entry<IProperty<?>, Comparable<?>> entry : values.entrySet()) {
+            if (stringbuilder.length() != 0) {
+                stringbuilder.append(",");
+            }
+
+            IProperty<?> property = entry.getKey();
+            stringbuilder.append(property.getName());
+            stringbuilder.append("=");
+            stringbuilder.append(getPropertyName(property, entry.getValue()));
+        }
+
+        if (stringbuilder.length() == 0) {
+            stringbuilder.append("normal");
+        }
+
+        return stringbuilder.toString();
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <T extends Comparable<T>> String
+            getPropertyName(IProperty<T> property, Comparable<?> comparable) {
+        return property.getName((T) comparable);
     }
 
     private GeneralUtility() {

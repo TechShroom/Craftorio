@@ -16,6 +16,11 @@ import net.minecraft.world.World;
 public class TileEntityRailSignal extends TileEntity implements RailSignal {
 
     @Override
+    public void onLoad() {
+        getAttachedRail().getSegment().addRailSignal(this);
+    }
+
+    @Override
     public EnumFacing getControlledDirection() {
         return getWorld().getBlockState(getPos())
                 .getValue(BlockRailSignal.ATTACHED_RAIL_PROPERTY);

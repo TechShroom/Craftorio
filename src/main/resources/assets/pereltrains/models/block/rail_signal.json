@@ -1,9 +1,20 @@
 {
-    "__comment": "Model generated using MrCrayfish's Model Creator (http://mrcrayfish.com/modelcreator/)",
+    "parent": "minecraft:block/block",
+    "display": {
+        "gui": {
+            "rotation": [ 30, 45, 0 ],
+            "translation": [ 0, -1, 0],
+            "scale":[ 0.8, 0.8, 0.8 ]
+        },
+        "head": {
+            "rotation": [ 0, 0, 0 ],
+            "translation": [ 0, -3, -6],
+            "scale":[ 1, 1, 1]
+        }
+    },
     "textures": {
         "top": "pereltrains:blocks/signal-vert-face",
         "bottom": "pereltrains:blocks/signal-vert-face",
-        "light": "pereltrains:blocks/signal-light",
         "side": "pereltrains:blocks/signal-side"
     },
     "elements": [
@@ -16,7 +27,7 @@
                 "east": { "texture": "#bottom", "uv": [ 0.0, 0.0, 2.0, 1.0 ] },
                 "south": { "texture": "#bottom", "uv": [ 0.0, 0.0, 2.0, 1.0 ] },
                 "west": { "texture": "#bottom", "uv": [ 0.0, 0.0, 2.0, 1.0 ] },
-                "down": { "texture": "#bottom", "uv": [ 0.0, 0.0, 2.0, 2.0 ], "cullface": "down" }
+                "down": { "texture": "#bottom", "uv": [ 0.0, 0.0, 2.0, 2.0 ] }
             }
         },
         {
@@ -28,7 +39,7 @@
                 "east": { "texture": "#top", "uv": [ 0.0, 0.0, 2.0, 1.0 ] },
                 "south": { "texture": "#top", "uv": [ 0.0, 0.0, 2.0, 1.0 ] },
                 "west": { "texture": "#top", "uv": [ 0.0, 0.0, 2.0, 1.0 ] },
-                "up": { "texture": "#top", "uv": [ 0.0, 0.0, 2.0, 2.0 ], "cullface": "up" }
+                "up": { "texture": "#top", "uv": [ 0.0, 0.0, 2.0, 2.0 ] }
             }
         },
         {

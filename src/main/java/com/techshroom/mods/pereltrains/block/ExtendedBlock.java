@@ -28,10 +28,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.google.common.collect.ImmutableList;
+import com.techshroom.mods.pereltrains.PerelTrains;
+import com.techshroom.mods.pereltrains.util.GeneralUtility;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
+import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.client.renderer.block.statemap.StateMap;
+import net.minecraft.item.Item;
 import net.minecraftforge.client.model.ModelLoader;
 
 public abstract class ExtendedBlock extends Block {
@@ -55,6 +59,21 @@ public abstract class ExtendedBlock extends Block {
 
     protected ExtendedBlock(String unlocalizedName) {
         this(Material.IRON, unlocalizedName);
+    }
+
+    public void clientInit() {
+        String inventoryVariant = getInventoryVariant();
+        PerelTrains.getLogger().info(
+                "inventoryVariant for " + this + " is " + inventoryVariant);
+        ModelLoader.setCustomModelResourceLocation(Item.getItemFromBlock(this),
+                0,
+                new ModelResourceLocation(
+                        GeneralUtility.addressMod(getUnlocalizedName()),
+                        inventoryVariant));
+    }
+
+    protected String getInventoryVariant() {
+        return "inventory";
     }
 
 }

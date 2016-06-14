@@ -19,7 +19,8 @@ public class TileEntityAutoRailBase extends TileEntity implements Rail {
     private int segmentId = -1;
     private transient Segment segment;
 
-    public TileEntityAutoRailBase() {
+    @Override
+    public void onLoad() {
         checkSegment();
     }
 
@@ -27,13 +28,12 @@ public class TileEntityAutoRailBase extends TileEntity implements Rail {
     public void readFromNBT(NBTTagCompound compound) {
         super.readFromNBT(compound);
         this.segmentId = compound.getInteger("segmentId");
-        checkSegment();
     }
 
     public void checkSegment() {
         if (this.segmentId == -1) {
             if (this.segment == null) {
-                this.segment = Segment.create();
+                setSegment(Segment.create());
             }
             this.segmentId = this.segment.getId();
         }
@@ -41,7 +41,12 @@ public class TileEntityAutoRailBase extends TileEntity implements Rail {
         if (this.segment != null && this.segment.getId() == this.segmentId) {
             return;
         }
-        this.segment = Segment.get(this.segmentId);
+        setSegment(Segment.get(this.segmentId));
+    }
+
+    private void setSegment(Segment segment) {
+        this.segment = segment;
+        //this.segment.addRail(this);
     }
 
     @Override
