@@ -27,6 +27,7 @@ package com.techshroom.mods.pereltrains.block;
 import javax.annotation.Nullable;
 
 import com.techshroom.mods.pereltrains.Constants;
+import com.techshroom.mods.pereltrains.block.entity.TileEntityRailSignal;
 import com.techshroom.mods.pereltrains.util.BlockLocator;
 import com.techshroom.mods.pereltrains.util.GeneralUtility;
 
@@ -99,24 +100,7 @@ public class BlockRailSignal extends ExtendedBlock {
 
     private EnumFacing calculateFacingFromState(IBlockState state) {
         EnumFacing railFace = state.getValue(ATTACHED_RAIL_PROPERTY);
-        // Following factorio rules:
-        // Signals north of the rails face west
-        // Signals south of the rails face east
-        // Signals west of the rails face south
-        // Signals east of the rails face north
-        switch (railFace.getOpposite()) {
-            case NORTH:
-                return EnumFacing.WEST;
-            case SOUTH:
-                return EnumFacing.EAST;
-            case WEST:
-                return EnumFacing.SOUTH;
-            case EAST:
-                return EnumFacing.NORTH;
-            default:
-                throw new IllegalStateException(
-                        "non-standard rail-face " + railFace);
-        }
+        return GeneralUtility.getSignalFacing(railFace);
     }
 
     private EnumFacing findRail(IBlockAccess worldIn, BlockPos pos) {
@@ -193,6 +177,11 @@ public class BlockRailSignal extends ExtendedBlock {
         if (!validatePosition(world, pos, state)) {
             // explode!
             world.destroyBlock(pos, true);
+        }
+        TileEntityRailSignal te =
+                ((TileEntityRailSignal) world.getTileEntity(pos));
+        if (te != null) {
+            te.recalculateSegmentData();
         }
     }
 

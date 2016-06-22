@@ -1,3 +1,6 @@
 {
-    "parent": "minecraft:item/rail"
+    "parent": "item/generated",
+    "textures": {
+        "layer0": "pereltrains:blocks/normal_rail_line"
+    }
 }

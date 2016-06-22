@@ -30,6 +30,7 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 import com.techshroom.mods.pereltrains.block.entity.TileEntityAutoRailBase;
+import com.techshroom.mods.pereltrains.segment.RailGraph;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.ITileEntityProvider;
@@ -208,12 +209,15 @@ public abstract class BlockAutoRailBase extends ExtendedBlock
 
     @Override
     public void breakBlock(World worldIn, BlockPos pos, IBlockState state) {
-        super.breakBlock(worldIn, pos, state);
-
+        TileEntityAutoRailBase tile = (TileEntityAutoRailBase) worldIn.getTileEntity(pos);
+        if (tile != null) {
+            RailGraph.get(worldIn).ifPresent(g -> g.removeRail(tile));
+        }
         if (((BlockAutoRailBase.RailDirection) state
                 .getValue(this.getShapeProperty())).isAscending()) {
             worldIn.notifyNeighborsOfStateChange(pos.up(), this);
         }
+        super.breakBlock(worldIn, pos, state);
     }
 
     public abstract IProperty<BlockAutoRailBase.RailDirection>

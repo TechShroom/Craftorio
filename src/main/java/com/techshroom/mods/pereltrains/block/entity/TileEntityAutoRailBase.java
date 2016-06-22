@@ -24,60 +24,34 @@
  */
 package com.techshroom.mods.pereltrains.block.entity;
 
-import static com.google.common.base.Preconditions.checkState;
-
 import java.util.Map;
 import java.util.Optional;
 
 import com.google.common.collect.ImmutableMap;
+import com.techshroom.mods.pereltrains.WorldAbstraction;
+import com.techshroom.mods.pereltrains.WorldAbstractionImpl;
 import com.techshroom.mods.pereltrains.segment.Rail;
+import com.techshroom.mods.pereltrains.segment.RailGraph;
 import com.techshroom.mods.pereltrains.segment.Segment;
 import com.techshroom.mods.pereltrains.signal.RailSignal;
+import com.techshroom.mods.pereltrains.util.GeneralUtility;
 
-import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.math.BlockPos;
 
 public class TileEntityAutoRailBase extends TileEntity implements Rail {
 
-    private int segmentId = -1;
-    private transient Segment segment;
+    private Segment segment;
 
     @Override
     public void onLoad() {
-        checkSegment();
+        loadSelfIntoGraph();
     }
 
     @Override
-    public void readFromNBT(NBTTagCompound compound) {
-        super.readFromNBT(compound);
-        this.segmentId = compound.getInteger("segmentId");
-    }
-
-    public void checkSegment() {
-        if (this.segmentId == -1) {
-            if (this.segment == null) {
-                setSegment(Segment.create());
-            }
-            this.segmentId = this.segment.getId();
-        }
-        // Change if no segment or if the ID is different
-        if (this.segment != null && this.segment.getId() == this.segmentId) {
-            return;
-        }
-        setSegment(Segment.get(this.segmentId));
-    }
-
-    private void setSegment(Segment segment) {
-        this.segment = segment;
-        //this.segment.addRail(this);
-    }
-
-    @Override
-    public NBTTagCompound writeToNBT(NBTTagCompound compound) {
-        checkState(this.segmentId != -1, "checkSegment never called!");
-        compound.setInteger("segmentId", this.segmentId);
-        return super.writeToNBT(compound);
+    public void loadSelfIntoGraph() {
+        RailGraph.get(getWorld()).ifPresent(g -> g.addRail(this));
     }
 
     @Override
@@ -88,26 +62,53 @@ public class TileEntityAutoRailBase extends TileEntity implements Rail {
     private Map<EnumFacing, Rail> generateNeighborRails() {
         ImmutableMap.Builder<EnumFacing, Rail> map = ImmutableMap.builder();
         for (EnumFacing facing : EnumFacing.HORIZONTALS) {
-            TileEntity te = getWorld().getTileEntity(getPos().offset(facing));
-            if (te instanceof Rail) {
-                map.put(facing, (Rail) te);
-            }
+            getRail(facing).ifPresent(r -> map.put(facing, r));
         }
         return map.build();
     }
 
     @Override
-    public Optional<RailSignal> getSignal(EnumFacing dir) {
-        return Optional
-                .ofNullable(getWorld().getTileEntity(getPos().offset(dir)))
+    public Optional<RailSignal> getRailSignalBlocking(EnumFacing travelDir) {
+        EnumFacing wayToSignal =
+                GeneralUtility.getSignalFacing(travelDir).getOpposite();
+        BlockPos pos = getPos().offset(wayToSignal);
+        if (!getWorld().isBlockLoaded(pos)) {
+            return Optional.empty();
+        }
+        return Optional.ofNullable(getWorld().getTileEntity(pos))
                 .filter(RailSignal.class::isInstance)
                 .map(RailSignal.class::cast);
     }
 
     @Override
-    public Segment getSegment() {
-        checkSegment();
-        return this.segment;
+    public Optional<Segment> getSegment() {
+        return Optional.ofNullable(this.segment);
+    }
+
+    @Override
+    public void setSegment(Segment segment) {
+        this.segment = segment;
+    }
+
+    @Override
+    public Optional<Rail> getRail(EnumFacing dir) {
+        BlockPos pos = getPos().offset(dir);
+        if (!getWorld().isBlockLoaded(pos)) {
+            return Optional.empty();
+        }
+        return Optional.ofNullable(getWorld().getTileEntity(pos))
+                .filter(Rail.class::isInstance).map(Rail.class::cast);
+    }
+
+    @Override
+    public WorldAbstraction getWorldAbstract() {
+        return WorldAbstractionImpl.get(getWorld());
+    }
+
+    @Override
+    public String toString() {
+        return getClass().getName() + "[segment=" + this.segment + ",pos="
+                + getPos() + "]";
     }
 
 }

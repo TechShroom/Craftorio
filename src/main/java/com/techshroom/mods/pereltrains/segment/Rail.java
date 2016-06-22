@@ -27,16 +27,30 @@ package com.techshroom.mods.pereltrains.segment;
 import java.util.Map;
 import java.util.Optional;
 
+import javax.annotation.Nullable;
+
+import com.techshroom.mods.pereltrains.WorldAbstraction;
 import com.techshroom.mods.pereltrains.signal.RailSignal;
 
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.math.BlockPos;
 
 public interface Rail {
+
+    BlockPos getPos();
     
-    Segment getSegment();
+    WorldAbstraction getWorldAbstract();
+
+    void loadSelfIntoGraph();
+
+    Optional<RailSignal> getRailSignalBlocking(EnumFacing travelDir);
+
+    Optional<Segment> getSegment();
+
+    void setSegment(@Nullable Segment segment);
 
     Map<EnumFacing, Rail> getNeighborRails();
 
-    Optional<RailSignal> getSignal(EnumFacing dir);
+    Optional<Rail> getRail(EnumFacing dir);
 
 }

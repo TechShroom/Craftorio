@@ -24,6 +24,8 @@
  */
 package com.techshroom.mods.pereltrains.signal;
 
+import java.util.Optional;
+
 import com.techshroom.mods.pereltrains.segment.Rail;
 
 import net.minecraft.util.EnumFacing;
@@ -32,8 +34,12 @@ public interface RailSignal {
 
     EnumFacing getControlledDirection();
 
-    Rail getAttachedRail();
+    Optional<Rail> getRailForEnteringSegment();
+
+    Optional<Rail> getRailForThisSignalsSegment();
 
     void onStateChange(BlockingState previousState);
+    
+    void recalculateSegmentData();
 
 }
