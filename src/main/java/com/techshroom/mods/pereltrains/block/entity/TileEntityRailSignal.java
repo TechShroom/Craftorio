@@ -24,67 +24,39 @@
  */
 package com.techshroom.mods.pereltrains.block.entity;
 
-import java.util.Optional;
-
-import com.techshroom.mods.pereltrains.PerelTrains;
 import com.techshroom.mods.pereltrains.block.BlockRailSignal;
 import com.techshroom.mods.pereltrains.block.LightValue;
-import com.techshroom.mods.pereltrains.segment.Rail;
-import com.techshroom.mods.pereltrains.segment.Segment;
 import com.techshroom.mods.pereltrains.signal.BlockingState;
-import com.techshroom.mods.pereltrains.signal.RailSignal;
-import com.techshroom.mods.pereltrains.util.GeneralUtility;
 
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
-public class TileEntityRailSignal extends TileEntity implements RailSignal {
-
-    private Segment inSegment = null;
+public class TileEntityRailSignal extends TileEntity {
 
     @Override
     public void onLoad() {
-        recalculateSegmentData();
+        recalculateLighting();
     }
 
-    @Override
-    public void recalculateSegmentData() {
-        Optional<Segment> seg =
-                getRailForThisSignalsSegment().flatMap(Rail::getSegment);
-        Segment tmp;
-        if (seg.isPresent() && !(tmp = seg.get()).equals(this.inSegment)) {
-            if (this.inSegment != null) {
-                this.inSegment.removeRailSignal(this);
-            }
-            tmp.addRailSignal(this);
-            this.inSegment = tmp;
-        } else if (!seg.isPresent()) {
-            if (this.inSegment != null) {
-                this.inSegment.removeRailSignal(this);
-                this.inSegment = null;
-            }
+    public void recalculateLighting() {
+        World w = getWorld();
+        TileEntityAutoRailBase railAttached = (TileEntityAutoRailBase) w
+                .getTileEntity(getPos().offset(w.getBlockState(getPos())
+                        .getValue(BlockRailSignal.ATTACHED_RAIL_PROPERTY)));
+        if (railAttached != null) {
+            railAttached.getSegment().addRailSignal(this);
         }
     }
 
-    @Override
-    public EnumFacing getControlledDirection() {
-        return GeneralUtility
-                .getSignalFacing(getWorld().getBlockState(getPos())
-                        .getValue(BlockRailSignal.ATTACHED_RAIL_PROPERTY))
-                .getOpposite();
+    private void setState(LightValue light) {
+        World w = getWorld();
+        w.setBlockState(getPos(), w.getBlockState(getPos())
+                .withProperty(BlockRailSignal.LIGHT_PROPERTY, light));
     }
 
-    @Override
-    public void onStateChange(BlockingState previousState) {
-        if (this.inSegment == null) {
-            // TODO is this exception worthy?
-            PerelTrains.getLogger()
-                    .warn("Returning from onStateChange due to null inSegment");
-            return;
-        }
-        switch (this.inSegment.getState()) {
+    public void onStateChange(BlockingState previousState,
+            BlockingState newState) {
+        switch (newState) {
             case OPEN:
                 setState(LightValue.GREEN);
                 break;
@@ -98,34 +70,6 @@ public class TileEntityRailSignal extends TileEntity implements RailSignal {
                 setState(LightValue.NONE);
                 break;
         }
-    }
-
-    private void setState(LightValue light) {
-        World w = getWorld();
-        w.setBlockState(getPos(), w.getBlockState(getPos())
-                .withProperty(BlockRailSignal.LIGHT_PROPERTY, light));
-    }
-
-    // not part of the segment
-    @Override
-    public Optional<Rail> getRailForEnteringSegment() {
-        return getRail(getControlledDirection().getOpposite());
-    }
-
-    // part of the segment
-    @Override
-    public Optional<Rail> getRailForThisSignalsSegment() {
-        return getRail(getControlledDirection());
-    }
-
-    private Optional<Rail> getRail(EnumFacing wayToRail) {
-        BlockPos pos = getPos().offset(wayToRail);
-        if (!getWorld().isBlockLoaded(pos)) {
-            return Optional.empty();
-        }
-        TileEntity tileEntity = getWorld().getTileEntity(pos);
-        return Optional.ofNullable(tileEntity).filter(Rail.class::isInstance)
-                .map(Rail.class::cast);
     }
 
 }

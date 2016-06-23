@@ -29,8 +29,8 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
+import com.techshroom.mods.pereltrains.block.entity.TESRRailSegmentDisplay;
 import com.techshroom.mods.pereltrains.block.entity.TileEntityAutoRailBase;
-import com.techshroom.mods.pereltrains.segment.RailGraph;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.ITileEntityProvider;
@@ -47,6 +47,8 @@ import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
+import net.minecraftforge.fml.client.registry.ClientRegistry;
+import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
@@ -69,6 +71,13 @@ public abstract class BlockAutoRailBase extends ExtendedBlock
 
     protected BlockAutoRailBase(String unlocalizedName) {
         super(Material.CIRCUITS, unlocalizedName);
+    }
+
+    @Override
+    public void clientInit() {
+        super.clientInit();
+        ClientRegistry.bindTileEntitySpecialRenderer(
+                TileEntityAutoRailBase.class, new TESRRailSegmentDisplay());
     }
 
     @SuppressWarnings("deprecation")
@@ -180,8 +189,9 @@ public abstract class BlockAutoRailBase extends ExtendedBlock
         }
     }
 
-    protected void updateState(IBlockState p_189541_1_, World p_189541_2_,
-            BlockPos p_189541_3_, Block p_189541_4_) {
+    protected void updateState(IBlockState blockState, World world,
+            BlockPos pos, Block block) {
+        ((TileEntityAutoRailBase) world.getTileEntity(pos)).updateLinks();
     }
 
     protected IBlockState updateDir(World worldIn, BlockPos pos,
@@ -209,9 +219,10 @@ public abstract class BlockAutoRailBase extends ExtendedBlock
 
     @Override
     public void breakBlock(World worldIn, BlockPos pos, IBlockState state) {
-        TileEntityAutoRailBase tile = (TileEntityAutoRailBase) worldIn.getTileEntity(pos);
+        TileEntityAutoRailBase tile =
+                (TileEntityAutoRailBase) worldIn.getTileEntity(pos);
         if (tile != null) {
-            RailGraph.get(worldIn).ifPresent(g -> g.removeRail(tile));
+
         }
         if (((BlockAutoRailBase.RailDirection) state
                 .getValue(this.getShapeProperty())).isAscending()) {

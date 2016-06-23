@@ -24,85 +24,97 @@
  */
 package com.techshroom.mods.pereltrains.block.entity;
 
-import java.util.Map;
-import java.util.Optional;
+import java.util.HashSet;
+import java.util.Set;
 
-import com.google.common.collect.ImmutableMap;
-import com.techshroom.mods.pereltrains.WorldAbstraction;
-import com.techshroom.mods.pereltrains.WorldAbstractionImpl;
-import com.techshroom.mods.pereltrains.segment.Rail;
-import com.techshroom.mods.pereltrains.segment.RailGraph;
+import com.techshroom.mods.pereltrains.PerelTrains;
+import com.techshroom.mods.pereltrains.block.PerelBlocks;
 import com.techshroom.mods.pereltrains.segment.Segment;
-import com.techshroom.mods.pereltrains.signal.RailSignal;
-import com.techshroom.mods.pereltrains.util.GeneralUtility;
 
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 
-public class TileEntityAutoRailBase extends TileEntity implements Rail {
+public class TileEntityAutoRailBase extends TileEntity {
 
+    private final Set<TileEntityAutoRailBase> connections = new HashSet<>();
     private Segment segment;
 
     @Override
     public void onLoad() {
-        loadSelfIntoGraph();
+        updateLinks();
     }
 
-    @Override
-    public void loadSelfIntoGraph() {
-        RailGraph.get(getWorld()).ifPresent(g -> g.addRail(this));
-    }
-
-    @Override
-    public Map<EnumFacing, Rail> getNeighborRails() {
-        return generateNeighborRails();
-    }
-
-    private Map<EnumFacing, Rail> generateNeighborRails() {
-        ImmutableMap.Builder<EnumFacing, Rail> map = ImmutableMap.builder();
-        for (EnumFacing facing : EnumFacing.HORIZONTALS) {
-            getRail(facing).ifPresent(r -> map.put(facing, r));
+    public void updateLinks() {
+        if (getWorld().isRemote) {
+            return;
         }
-        return map.build();
-    }
-
-    @Override
-    public Optional<RailSignal> getRailSignalBlocking(EnumFacing travelDir) {
-        EnumFacing wayToSignal =
-                GeneralUtility.getSignalFacing(travelDir).getOpposite();
-        BlockPos pos = getPos().offset(wayToSignal);
-        if (!getWorld().isBlockLoaded(pos)) {
-            return Optional.empty();
+        this.connections.clear();
+        if (this.segment != null) {
+            this.segment.removeRail(this);
         }
-        return Optional.ofNullable(getWorld().getTileEntity(pos))
-                .filter(RailSignal.class::isInstance)
-                .map(RailSignal.class::cast);
-    }
-
-    @Override
-    public Optional<Segment> getSegment() {
-        return Optional.ofNullable(this.segment);
-    }
-
-    @Override
-    public void setSegment(Segment segment) {
-        this.segment = segment;
-    }
-
-    @Override
-    public Optional<Rail> getRail(EnumFacing dir) {
-        BlockPos pos = getPos().offset(dir);
-        if (!getWorld().isBlockLoaded(pos)) {
-            return Optional.empty();
+        Segment remap = this.segment;
+        World world = getWorld();
+        if (world.isBlockLoaded(getPos())) {
+            for (BlockPos pos : PerelBlocks.NORMAL_RAIL.new ConnectionHelper(
+                    world, getPos(), world.getBlockState(getPos()))
+                            .getConnectedRails()) {
+                if (!world.isBlockLoaded(pos)) {
+                    // we'll get it later!
+                    continue;
+                }
+                TileEntityAutoRailBase rail =
+                        (TileEntityAutoRailBase) world.getTileEntity(pos);
+                if (rail == null) {
+                    // skip it, wtf?
+                    continue;
+                }
+                this.connections.add(rail);
+                if (remap == null) {
+                    remap = rail.getSegment();
+                }
+                if (rail.getSegment() != remap) {
+                    rail.segment = remap;
+                } else if (rail.getSegment() == null) {
+                    // schedule re-write for later?
+                    // idk
+                    PerelTrains.getLogger().warn(
+                            "Rail with null segment as neighbor: " + rail);
+                }
+            }
         }
-        return Optional.ofNullable(getWorld().getTileEntity(pos))
-                .filter(Rail.class::isInstance).map(Rail.class::cast);
+        if (remap == null) {
+            remap = Segment.create();
+        }
+        this.segment = remap;
+        this.segment.addRail(this);
     }
 
     @Override
-    public WorldAbstraction getWorldAbstract() {
-        return WorldAbstractionImpl.get(getWorld());
+    public NBTTagCompound writeToNBT(NBTTagCompound compound) {
+        if (this.segment != null) {
+            compound.setInteger("segmentId", this.segment.getId());
+        }
+        return super.writeToNBT(compound);
+    }
+
+    @Override
+    public void readFromNBT(NBTTagCompound compound) {
+        super.readFromNBT(compound);
+        if (compound.hasKey("segmentId")) {
+            this.segment = Segment.get(compound.getInteger("segmentId"));
+            this.segment.addRail(this);
+        }
+    }
+
+    public Segment getSegment() {
+        return this.segment;
+    }
+
+    @Override
+    public boolean hasFastRenderer() {
+        return true;
     }
 
     @Override

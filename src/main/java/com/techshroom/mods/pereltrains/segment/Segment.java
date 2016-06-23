@@ -34,11 +34,9 @@ import java.util.Set;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
-import com.techshroom.mods.pereltrains.PerelTrains;
+import com.techshroom.mods.pereltrains.block.entity.TileEntityAutoRailBase;
+import com.techshroom.mods.pereltrains.block.entity.TileEntityRailSignal;
 import com.techshroom.mods.pereltrains.signal.BlockingState;
-import com.techshroom.mods.pereltrains.signal.RailSignal;
-
-import net.minecraft.util.EnumFacing;
 
 /**
  * A segment is a section of a railway that is guarded by one or more signals. A
@@ -61,11 +59,11 @@ public final class Segment {
         return get(usedIds.nextClearBit(0));
     }
 
-    private final Set<RailSignal> guardingSignals = new HashSet<>();
-    private final Set<Rail> endpoints = new HashSet<>();
+    private final Set<TileEntityRailSignal> guardingSignals = new HashSet<>();
+    private final Set<TileEntityAutoRailBase> rails = new HashSet<>();
     private final int id;
     private BlockingState state = BlockingState.OPEN;
-    private Train reservation;
+    private int reservation;
 
     private Segment(int id) {
         usedIds.set(id);
@@ -76,67 +74,55 @@ public final class Segment {
         return this.id;
     }
 
-    public void addRailSignal(RailSignal signal) {
+    public void addRailSignal(TileEntityRailSignal signal) {
         checkNotNull(signal);
         checkState(!this.guardingSignals.contains(signal),
                 "duplicate signal registration");
         this.guardingSignals.add(signal);
-        signal.onStateChange(this.state);
+        signal.onStateChange(this.state, this.state);
     }
 
-    public boolean hasSignal(RailSignal signal) {
+    public boolean hasSignal(TileEntityRailSignal signal) {
         return this.guardingSignals.contains(signal);
     }
 
-    public void addRail(Rail rail) {
-        rail.setSegment(this);
-        for (EnumFacing potentialTravel : EnumFacing.HORIZONTALS) {
-            if (hasSignal(
-                    rail.getRailSignalBlocking(potentialTravel).orElse(null))) {
-                this.endpoints.add(rail);
-            }
-        }
+    public void addRail(TileEntityAutoRailBase rail) {
+        this.rails.add(rail);
     }
 
-    public void removeRail(Rail rail) {
-        rail.setSegment(null);
-        if (!this.endpoints.contains(rail)) {
-            PerelTrains.getLogger().warn(
-                    "Attempting to remove rail that doesn't exist: " + rail);
-            return;
-        }
-        this.endpoints.remove(rail);
+    public void removeRail(TileEntityAutoRailBase rail) {
+        this.rails.remove(rail);
     }
 
-    public void removeRailSignal(RailSignal signal) {
-        checkNotNull(signal);
-        if (!this.guardingSignals.contains(signal)) {
-            PerelTrains.getLogger()
-                    .warn("Attempting to remove signal that doesn't exist: "
-                            + signal);
-            return;
-        }
+    public void removeRailSignal(TileEntityRailSignal signal) {
         this.guardingSignals.remove(signal);
     }
 
-    public Set<RailSignal> getGuardingSignals() {
+    public Set<TileEntityRailSignal> getGuardingSignals() {
         return this.guardingSignals;
     }
 
-    public Set<Rail> getEndpoints() {
-        return this.endpoints;
+    public Set<TileEntityAutoRailBase> getRails() {
+        return this.rails;
     }
 
-    public boolean attemptReserve(Train train) {
-        if (train == null) {
+    public boolean attemptReserve(int train) {
+        if (this.reservation != -1 && this.reservation != train) {
             return false;
         }
-        if (this.reservation != null && this.reservation != train) {
+        if (this.state != BlockingState.OPEN) {
             return false;
         }
         this.reservation = train;
         setState(BlockingState.EXPECTING);
         return true;
+    }
+    
+    public void onEnter(int train) {
+        if (train != this.reservation) {
+            // should we do anything about this???
+        }
+        setState(BlockingState.CLOSED);
     }
 
     public BlockingState getState() {
@@ -146,8 +132,8 @@ public final class Segment {
     private void setState(BlockingState state) {
         BlockingState prev = this.state;
         this.state = checkNotNull(state);
-        for (RailSignal signal : this.guardingSignals) {
-            signal.onStateChange(prev);
+        for (TileEntityRailSignal signal : this.guardingSignals) {
+            signal.onStateChange(prev, this.state);
         }
     }
 

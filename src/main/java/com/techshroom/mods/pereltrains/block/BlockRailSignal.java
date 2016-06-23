@@ -181,7 +181,7 @@ public class BlockRailSignal extends ExtendedBlock {
         TileEntityRailSignal te =
                 ((TileEntityRailSignal) world.getTileEntity(pos));
         if (te != null) {
-            te.recalculateSegmentData();
+            te.recalculateLighting();
         }
     }
 
