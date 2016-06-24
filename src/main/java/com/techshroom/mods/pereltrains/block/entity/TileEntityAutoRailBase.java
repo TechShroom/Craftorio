@@ -35,16 +35,15 @@ import com.techshroom.mods.pereltrains.block.PerelBlocks;
 import com.techshroom.mods.pereltrains.segment.Segment;
 import com.techshroom.mods.pereltrains.util.GeneralUtility;
 
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.INetHandlerPlayClient;
 import net.minecraft.network.play.server.SPacketUpdateTileEntity;
-import net.minecraft.server.management.PlayerChunkMapEntry;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import net.minecraft.world.WorldServer;
 import net.minecraft.world.chunk.Chunk.EnumCreateEntityType;
 import net.minecraftforge.common.util.Constants.NBT;
 
@@ -155,6 +154,18 @@ public class TileEntityAutoRailBase extends TileEntity {
                 this.connections.add(GeneralUtility.blockPosData(data.get(i)));
             }
         }
+    }
+
+    @Override
+    public void markDirty() {
+        if (!getWorld().isRemote) {
+            getWorld()
+                    .getPlayers(EntityPlayerMP.class,
+                            epmp -> epmp.getDistanceSq(getPos()) < 64 * 64)
+                    .forEach(epmp -> epmp.connection
+                            .sendPacket(getUpdatePacket()));
+        }
+        super.markDirty();
     }
 
     @Override
