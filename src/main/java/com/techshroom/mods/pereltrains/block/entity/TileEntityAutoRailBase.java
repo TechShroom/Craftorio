@@ -112,6 +112,7 @@ public class TileEntityAutoRailBase extends TileEntity {
         this.segment.addRail(this);
         PerelTrains.getLogger().info("FINAL CONNECTIONS " + this.connections);
         if (weLoadedNow) {
+            PerelTrains.getLogger().info("markDirty " + getPos());
             this.markDirty();
         }
     }
