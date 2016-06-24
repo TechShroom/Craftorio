@@ -74,7 +74,6 @@ configFile.withReader {
 }
 
 dependencies {
-
     compile group: 'com.flowpowered', name: 'flow-math', version: '1.0.2'
     compile group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.6'
     compile group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.6'
@@ -140,6 +139,7 @@ license {
     ignoreFailures = false
     strictCheck = true
     include '**/*.java'
+    exclude 'com/techshroom/mods/pereltrains/util/JGraphXAdapter.java'
     mapping {
         java = 'SLASHSTAR_STYLE'
     }
