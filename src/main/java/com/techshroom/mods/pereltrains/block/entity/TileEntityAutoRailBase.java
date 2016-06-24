@@ -37,10 +37,14 @@ import com.techshroom.mods.pereltrains.util.GeneralUtility;
 
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
+import net.minecraft.network.NetworkManager;
+import net.minecraft.network.play.INetHandlerPlayClient;
 import net.minecraft.network.play.server.SPacketUpdateTileEntity;
+import net.minecraft.server.management.PlayerChunkMapEntry;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraft.world.WorldServer;
 import net.minecraft.world.chunk.Chunk.EnumCreateEntityType;
 import net.minecraftforge.common.util.Constants.NBT;
 
@@ -138,7 +142,6 @@ public class TileEntityAutoRailBase extends TileEntity {
     @Override
     public void readFromNBT(NBTTagCompound compound) {
         super.readFromNBT(compound);
-        PerelTrains.getLogger().info("readFromNBT " + getPos());
         if (compound.hasKey("segmentId")) {
             this.segment = Segment.get(compound.getInteger("segmentId"));
             this.segment.addRail(this);
@@ -150,6 +153,15 @@ public class TileEntityAutoRailBase extends TileEntity {
             for (int i = 0; i < data.tagCount(); i++) {
                 this.connections.add(GeneralUtility.blockPosData(data.get(i)));
             }
+        }
+    }
+
+    @Override
+    public void onDataPacket(NetworkManager net, SPacketUpdateTileEntity pkt) {
+        PerelTrains.getLogger().info("onDataPacket " + pkt.getPos());
+        if (net.getNetHandler() instanceof INetHandlerPlayClient) {
+            PerelTrains.getLogger().info("reallyGonnaProcess " + pkt.getPos());
+            readFromNBT(pkt.getNbtCompound());
         }
     }
 
