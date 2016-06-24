@@ -25,20 +25,28 @@
 package com.techshroom.mods.pereltrains.block.entity;
 
 import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.techshroom.mods.pereltrains.PerelTrains;
 import com.techshroom.mods.pereltrains.block.PerelBlocks;
 import com.techshroom.mods.pereltrains.segment.Segment;
+import com.techshroom.mods.pereltrains.util.GeneralUtility;
 
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagList;
+import net.minecraft.network.play.server.SPacketUpdateTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraft.world.chunk.Chunk.EnumCreateEntityType;
+import net.minecraftforge.common.util.Constants.NBT;
 
 public class TileEntityAutoRailBase extends TileEntity {
 
-    private final Set<TileEntityAutoRailBase> connections = new HashSet<>();
+    private final Set<BlockPos> connections = new HashSet<>();
     private Segment segment;
 
     @Override
@@ -56,21 +64,27 @@ public class TileEntityAutoRailBase extends TileEntity {
         }
         Segment remap = this.segment;
         World world = getWorld();
-        if (world.isBlockLoaded(getPos())) {
-            for (BlockPos pos : PerelBlocks.NORMAL_RAIL.new ConnectionHelper(
-                    world, getPos(), world.getBlockState(getPos()))
-                            .getConnectedRails()) {
+        boolean weLoadedNow = world.isBlockLoaded(getPos());
+        if (weLoadedNow) {
+            List<BlockPos> connectedRails =
+                    PerelBlocks.NORMAL_RAIL.new ConnectionHelper(world,
+                            getPos(), world.getBlockState(getPos()))
+                                    .getConnectedRails();
+            PerelTrains.getLogger().info("For block at " + getPos()
+                    + " connections are " + connectedRails);
+            for (BlockPos pos : connectedRails) {
                 if (!world.isBlockLoaded(pos)) {
                     // we'll get it later!
                     continue;
                 }
-                TileEntityAutoRailBase rail =
-                        (TileEntityAutoRailBase) world.getTileEntity(pos);
+                TileEntityAutoRailBase rail = (TileEntityAutoRailBase) world
+                        .getChunkFromBlockCoords(pos)
+                        .getTileEntity(pos, EnumCreateEntityType.CHECK);
                 if (rail == null) {
-                    // skip it, wtf?
+                    // skip it, soft connection
                     continue;
                 }
-                this.connections.add(rail);
+                this.connections.add(pos);
                 if (remap == null) {
                     remap = rail.getSegment();
                 }
@@ -82,6 +96,9 @@ public class TileEntityAutoRailBase extends TileEntity {
                     PerelTrains.getLogger().warn(
                             "Rail with null segment as neighbor: " + rail);
                 }
+                // Now add ourselves to their set, because why not
+                rail.connections.add(getPos());
+                rail.markDirty();
             }
         }
         if (remap == null) {
@@ -89,6 +106,18 @@ public class TileEntityAutoRailBase extends TileEntity {
         }
         this.segment = remap;
         this.segment.addRail(this);
+        PerelTrains.getLogger().info("FINAL CONNECTIONS " + this.connections);
+        if (weLoadedNow) {
+            this.markDirty();
+        }
+    }
+
+    @Override
+    public void onChunkUnload() {
+        if (this.segment != null) {
+            this.segment.removeRail(this);
+        }
+        super.onChunkUnload();
     }
 
     @Override
@@ -96,20 +125,57 @@ public class TileEntityAutoRailBase extends TileEntity {
         if (this.segment != null) {
             compound.setInteger("segmentId", this.segment.getId());
         }
+        NBTTagList list = new NBTTagList();
+        this.connections.forEach(conn -> {
+            list.appendTag(GeneralUtility.blockPosData(conn));
+        });
+        if (!list.hasNoTags()) {
+            compound.setTag("connections", list);
+        }
         return super.writeToNBT(compound);
     }
 
     @Override
     public void readFromNBT(NBTTagCompound compound) {
         super.readFromNBT(compound);
+        PerelTrains.getLogger().info("readFromNBT " + getPos());
         if (compound.hasKey("segmentId")) {
             this.segment = Segment.get(compound.getInteger("segmentId"));
             this.segment.addRail(this);
         }
+        if (compound.hasKey("connections")) {
+            this.connections.clear();
+            NBTTagList data =
+                    compound.getTagList("connections", NBT.TAG_INT_ARRAY);
+            for (int i = 0; i < data.tagCount(); i++) {
+                this.connections.add(GeneralUtility.blockPosData(data.get(i)));
+            }
+        }
+    }
+
+    @Override
+    public SPacketUpdateTileEntity getUpdatePacket() {
+        return new SPacketUpdateTileEntity(getPos(), getBlockMetadata(),
+                getUpdateTag());
+    }
+
+    @Override
+    public NBTTagCompound getUpdateTag() {
+        return writeToNBT(new NBTTagCompound());
     }
 
     public Segment getSegment() {
         return this.segment;
+    }
+
+    public Set<BlockPos> getConnections() {
+        return this.connections;
+    }
+
+    public Set<TileEntityAutoRailBase> getConnectionsAsTE() {
+        return this.connections.stream().map(getWorld()::getTileEntity)
+                .map(TileEntityAutoRailBase.class::cast)
+                .filter(Objects::nonNull).collect(Collectors.toSet());
     }
 
     @Override

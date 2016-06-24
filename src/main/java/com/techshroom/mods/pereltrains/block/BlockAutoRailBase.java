@@ -29,6 +29,7 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
+import com.techshroom.mods.pereltrains.PerelTrains;
 import com.techshroom.mods.pereltrains.block.entity.TESRRailSegmentDisplay;
 import com.techshroom.mods.pereltrains.block.entity.TileEntityAutoRailBase;
 
@@ -48,7 +49,6 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
-import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
@@ -192,6 +192,7 @@ public abstract class BlockAutoRailBase extends ExtendedBlock
     protected void updateState(IBlockState blockState, World world,
             BlockPos pos, Block block) {
         ((TileEntityAutoRailBase) world.getTileEntity(pos)).updateLinks();
+        PerelTrains.getLogger().info("updateState " + pos);
     }
 
     protected IBlockState updateDir(World worldIn, BlockPos pos,

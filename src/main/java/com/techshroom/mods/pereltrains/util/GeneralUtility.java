@@ -33,7 +33,10 @@ import com.techshroom.mods.pereltrains.Constants;
 import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.gui.GuiButton;
+import net.minecraft.nbt.NBTBase;
+import net.minecraft.nbt.NBTTagIntArray;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.relauncher.Side;
@@ -219,4 +222,15 @@ public final class GeneralUtility {
 
     private GeneralUtility() {
     }
+
+    public static NBTBase blockPosData(BlockPos conn) {
+        return new NBTTagIntArray(
+                new int[] { conn.getX(), conn.getY(), conn.getZ() });
+    }
+
+    public static BlockPos blockPosData(NBTBase nbt) {
+        int[] data = ((NBTTagIntArray) nbt).getIntArray();
+        return new BlockPos(data[0], data[1], data[2]);
+    }
+
 }
