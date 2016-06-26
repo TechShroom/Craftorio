@@ -24,8 +24,11 @@
  */
 package com.techshroom.mods.pereltrains.block;
 
+import java.util.Map;
+
 import javax.annotation.Nullable;
 
+import com.google.common.collect.ImmutableMap;
 import com.techshroom.mods.pereltrains.Constants;
 import com.techshroom.mods.pereltrains.block.entity.TileEntityRailSignal;
 import com.techshroom.mods.pereltrains.util.BlockLocator;
@@ -54,9 +57,24 @@ public class BlockRailSignal extends ExtendedBlock {
     public static final PropertyEnum<EnumFacing> ATTACHED_RAIL_PROPERTY =
             PropertyDirection.create("attached", EnumFacing.Plane.HORIZONTAL);
     private static final double BLOCK_WIDTH = 16;
-    private static final AxisAlignedBB AABB =
-            new AxisAlignedBB(4 / BLOCK_WIDTH, 0 / BLOCK_WIDTH, 4 / BLOCK_WIDTH,
-                    12 / BLOCK_WIDTH, 14 / BLOCK_WIDTH, 12 / BLOCK_WIDTH);
+
+    private static AxisAlignedBB aabb(double x1, double y1, double z1,
+            double x2, double y2, double z2) {
+        return new AxisAlignedBB(x1 / BLOCK_WIDTH, y1 / BLOCK_WIDTH,
+                z1 / BLOCK_WIDTH, x2 / BLOCK_WIDTH, y2 / BLOCK_WIDTH,
+                z2 / BLOCK_WIDTH);
+    }
+
+    private static final Map<EnumFacing, AxisAlignedBB> AABBS;
+    static {
+        ImmutableMap.Builder<EnumFacing, AxisAlignedBB> map =
+                ImmutableMap.builder();
+        map.put(EnumFacing.NORTH, aabb(6, 0, 0, 10, 15, 5));
+        map.put(EnumFacing.SOUTH, aabb(6, 0, 11, 10, 15, 16));
+        map.put(EnumFacing.WEST, aabb(0, 0, 6, 5, 15, 10));
+        map.put(EnumFacing.EAST, aabb(11, 0, 6, 16, 15, 10));
+        AABBS = map.build();
+    }
 
     protected BlockRailSignal() {
         super(Material.IRON, "rail_signal");
@@ -117,14 +135,14 @@ public class BlockRailSignal extends ExtendedBlock {
     @Override
     public AxisAlignedBB getCollisionBoundingBox(IBlockState blockState,
             World worldIn, BlockPos pos) {
-        return AABB;
+        return AABBS.get(calculateFacingFromState(blockState));
     }
 
     @SuppressWarnings("deprecation")
     @Override
     public AxisAlignedBB getBoundingBox(IBlockState state, IBlockAccess source,
             BlockPos pos) {
-        return AABB;
+        return AABBS.get(calculateFacingFromState(state));
     }
 
     @Override

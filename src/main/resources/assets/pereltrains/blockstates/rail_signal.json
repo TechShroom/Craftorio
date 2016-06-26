@@ -1,8 +1,7 @@
 {
     "forge_marker": 1,
     "defaults": {
-        "model": "pereltrains:rail_signal",
-        "transform": "forge:default-block"
+        "model": "pereltrains:rail_signal"
     },
     "variants": {
         "light": {
@@ -21,31 +20,16 @@
         },
         "facing": {
             "north": {
-                "submodel": "pereltrains:rail_signal_lights"
+                "y": 0
             },
             "south": {
-                "submodel": "pereltrains:rail_signal_lights",
-                "transform": {
-                    "rotation": {
-                        "y": 180
-                    }
-                }
+                "y": 180
             },
             "east": {
-                "submodel": "pereltrains:rail_signal_lights",
-                "transform": {
-                    "rotation": {
-                        "y": 90
-                    }
-                }
+                "y": 90
             },
             "west": {
-                "submodel": "pereltrains:rail_signal_lights",
-                "transform": {
-                    "rotation": {
-                        "y": 270
-                    }
-                }
+                "y": 270
             }
         },
         "attached": {
