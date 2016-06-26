@@ -153,8 +153,7 @@ public abstract class BlockAutoRailBase extends ExtendedBlock
             Block blockIn) {
         if (!worldIn.isRemote) {
             BlockAutoRailBase.RailDirection railDir =
-                    (BlockAutoRailBase.RailDirection) state
-                            .getValue(this.getShapeProperty());
+                    state.getValue(this.getShapeProperty());
             boolean invalid = false;
 
             if (!worldIn.getBlockState(pos.down()).isSideSolid(worldIn,
@@ -191,8 +190,8 @@ public abstract class BlockAutoRailBase extends ExtendedBlock
 
     protected void updateState(IBlockState blockState, World world,
             BlockPos pos, Block block) {
-        ((TileEntityAutoRailBase) world.getTileEntity(pos)).updateLinks();
         PerelTrains.getLogger().info("updateState " + pos);
+        ((TileEntityAutoRailBase) world.getTileEntity(pos)).updateLinks();
     }
 
     protected IBlockState updateDir(World worldIn, BlockPos pos,
@@ -225,8 +224,7 @@ public abstract class BlockAutoRailBase extends ExtendedBlock
         if (tile != null) {
 
         }
-        if (((BlockAutoRailBase.RailDirection) state
-                .getValue(this.getShapeProperty())).isAscending()) {
+        if (state.getValue(this.getShapeProperty()).isAscending()) {
             worldIn.notifyNeighborsOfStateChange(pos.up(), this);
         }
         super.breakBlock(worldIn, pos, state);
@@ -366,7 +364,7 @@ public abstract class BlockAutoRailBase extends ExtendedBlock
         private void removeSoftConnections() {
             for (int i = 0; i < this.connectedRails.size(); ++i) {
                 BlockAutoRailBase.ConnectionHelper BlockAutoRailBase$rail =
-                        this.findRailAt((BlockPos) this.connectedRails.get(i));
+                        this.findRailAt(this.connectedRails.get(i));
 
                 if (BlockAutoRailBase$rail != null
                         && BlockAutoRailBase$rail.isConnectedToRail(this)) {
@@ -415,7 +413,7 @@ public abstract class BlockAutoRailBase extends ExtendedBlock
 
         private boolean isConnectedTo(BlockPos posIn) {
             for (int i = 0; i < this.connectedRails.size(); ++i) {
-                BlockPos blockpos = (BlockPos) this.connectedRails.get(i);
+                BlockPos blockpos = this.connectedRails.get(i);
 
                 if (blockpos.getX() == posIn.getX()
                         && blockpos.getZ() == posIn.getZ()) {
@@ -620,8 +618,8 @@ public abstract class BlockAutoRailBase extends ExtendedBlock
                 this.world.setBlockState(this.pos, this.state, 3);
 
                 for (int i = 0; i < this.connectedRails.size(); ++i) {
-                    BlockAutoRailBase.ConnectionHelper rail = this
-                            .findRailAt((BlockPos) this.connectedRails.get(i));
+                    BlockAutoRailBase.ConnectionHelper rail =
+                            this.findRailAt(this.connectedRails.get(i));
 
                     if (rail != null) {
                         rail.removeSoftConnections();

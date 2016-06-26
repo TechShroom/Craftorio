@@ -49,7 +49,7 @@ public class BlockRailSignal extends ExtendedBlock {
 
     public static final PropertyEnum<LightValue> LIGHT_PROPERTY = PropertyEnum
             .create(Constants.LIGHT_PROPERTY_NAME, LightValue.class);
-    private static final PropertyEnum<EnumFacing> FACING_PRORERTY =
+    public static final PropertyEnum<EnumFacing> FACING_PRORERTY =
             BlockHorizontal.FACING;
     public static final PropertyEnum<EnumFacing> ATTACHED_RAIL_PROPERTY =
             PropertyDirection.create("attached", EnumFacing.Plane.HORIZONTAL);

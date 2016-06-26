@@ -25,16 +25,20 @@
 package com.techshroom.mods.pereltrains.block.entity;
 
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Queue;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.techshroom.mods.pereltrains.PerelTrains;
+import com.techshroom.mods.pereltrains.block.BlockRailSignal;
 import com.techshroom.mods.pereltrains.block.PerelBlocks;
 import com.techshroom.mods.pereltrains.segment.Segment;
 import com.techshroom.mods.pereltrains.util.GeneralUtility;
 
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
@@ -42,12 +46,36 @@ import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.INetHandlerPlayClient;
 import net.minecraft.network.play.server.SPacketUpdateTileEntity;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk.EnumCreateEntityType;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.Constants.NBT;
+import net.minecraftforge.event.world.ChunkEvent;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
 public class TileEntityAutoRailBase extends TileEntity {
+
+    private static final class OnChunkLoad {
+
+        @SubscribeEvent
+        public void onChunkLoad(ChunkEvent.Load load) {
+            updateAll();
+        }
+
+    }
+
+    public static void addHooks() {
+        MinecraftForge.EVENT_BUS.register(new OnChunkLoad());
+    }
+
+    private static final Set<TileEntityAutoRailBase> updateMe = new HashSet<>();
+
+    private static void updateAll() {
+        updateMe.forEach(TileEntityAutoRailBase::updateLinks);
+        updateMe.clear();
+    }
 
     private final Set<BlockPos> connections = new HashSet<>();
     private Segment segment;
@@ -65,55 +93,91 @@ public class TileEntityAutoRailBase extends TileEntity {
         if (this.segment != null) {
             this.segment.removeRail(this);
         }
-        Segment remap = this.segment;
         World world = getWorld();
-        boolean weLoadedNow = world.isBlockLoaded(getPos());
-        if (weLoadedNow) {
-            List<BlockPos> connectedRails =
-                    PerelBlocks.NORMAL_RAIL.new ConnectionHelper(world,
-                            getPos(), world.getBlockState(getPos()))
-                                    .getConnectedRails();
-            PerelTrains.getLogger().info("For block at " + getPos()
-                    + " connections are " + connectedRails);
-            for (BlockPos pos : connectedRails) {
-                if (!world.isBlockLoaded(pos)) {
-                    // we'll get it later!
-                    continue;
-                }
-                TileEntityAutoRailBase rail = (TileEntityAutoRailBase) world
-                        .getChunkFromBlockCoords(pos)
-                        .getTileEntity(pos, EnumCreateEntityType.CHECK);
-                if (rail == null) {
-                    // skip it, soft connection
-                    continue;
-                }
-                this.connections.add(pos);
-                if (remap == null) {
-                    remap = rail.getSegment();
-                }
-                if (rail.getSegment() != remap) {
-                    rail.segment = remap;
-                } else if (rail.getSegment() == null) {
-                    // schedule re-write for later?
-                    // idk
-                    PerelTrains.getLogger().warn(
-                            "Rail with null segment as neighbor: " + rail);
-                }
-                // Now add ourselves to their set, because why not
-                rail.connections.add(getPos());
+        if (!world.isBlockLoaded(getPos())) {
+            updateMe.add(this);
+            return;
+        }
+        List<BlockPos> connectedRails =
+                PerelBlocks.NORMAL_RAIL.new ConnectionHelper(world, getPos(),
+                        world.getBlockState(getPos())).getConnectedRails();
+        for (BlockPos pos : connectedRails) {
+            if (!world.isBlockLoaded(pos)) {
+                // we'll get it later!
+                continue;
+            }
+            TileEntityAutoRailBase rail =
+                    (TileEntityAutoRailBase) world.getChunkFromBlockCoords(pos)
+                            .getTileEntity(pos, EnumCreateEntityType.CHECK);
+            if (rail == null) {
+                // skip it, soft connection
+                continue;
+            }
+            if (!rail.isConnectedTo(getPos())) {
+                // We're not actually connected to them.
+                continue;
+            }
+            this.connections.add(pos);
+            if (this.segment == null) {
+                this.segment = rail.getSegment();
+            }
+            if (rail.getSegment() != this.segment) {
+                rail.segment = this.segment;
+                propagateNonRecursive(rail);
+            } else if (rail.getSegment() == null) {
+                // schedule re-write for later?
+                // idk
+                PerelTrains.getLogger()
+                        .warn("Rail with null segment as neighbor: " + rail);
+            }
+            // Now add ourselves to their set, because why not
+            rail.connections.add(getPos());
+            rail.markDirty();
+        }
+        if (this.segment == null) {
+            this.segment = Segment.create();
+        }
+        this.segment.addRail(this);
+        PerelTrains.getLogger().info("finalConnections " + this.connections);
+        this.markDirty();
+    }
+
+    private void propagateNonRecursive(TileEntityAutoRailBase start) {
+        Queue<BlockPos> updates = new LinkedList<>(start.connections);
+        World world = getWorld();
+        while (!updates.isEmpty()) {
+            BlockPos pos = updates.poll();
+            if (!world.isBlockLoaded(pos)) {
+                // we'll get it later!
+                continue;
+            }
+            TileEntityAutoRailBase rail =
+                    (TileEntityAutoRailBase) world.getChunkFromBlockCoords(pos)
+                            .getTileEntity(pos, EnumCreateEntityType.CHECK);
+            if (rail == null) {
+                // skip it, soft connection
+                continue;
+            }
+            if (rail.segment != this.segment) {
+                rail.segment = this.segment;
                 rail.markDirty();
+                updates.addAll(rail.connections);
             }
         }
-        if (remap == null) {
-            remap = Segment.create();
-        }
-        this.segment = remap;
-        this.segment.addRail(this);
-        PerelTrains.getLogger().info("FINAL CONNECTIONS " + this.connections);
-        if (weLoadedNow) {
-            PerelTrains.getLogger().info("markDirty " + getPos());
-            this.markDirty();
-        }
+    }
+
+    public void onSignalAttached(TileEntityRailSignal signal) {
+        World world = getWorld();
+        IBlockState realState = world.getBlockState(signal.getPos())
+                .getActualState(world, getPos());
+        EnumFacing facing = realState.getValue(BlockRailSignal.FACING_PRORERTY);
+        
+    }
+
+    public boolean isConnectedTo(BlockPos pos) {
+        return PerelBlocks.NORMAL_RAIL.new ConnectionHelper(getWorld(),
+                getPos(), getWorld().getBlockState(getPos()))
+                        .getConnectedRails().contains(pos);
     }
 
     @Override
@@ -133,9 +197,7 @@ public class TileEntityAutoRailBase extends TileEntity {
         this.connections.forEach(conn -> {
             list.appendTag(GeneralUtility.blockPosData(conn));
         });
-        if (!list.hasNoTags()) {
-            compound.setTag("connections", list);
-        }
+        compound.setTag("connections", list);
         return super.writeToNBT(compound);
     }
 
@@ -170,9 +232,7 @@ public class TileEntityAutoRailBase extends TileEntity {
 
     @Override
     public void onDataPacket(NetworkManager net, SPacketUpdateTileEntity pkt) {
-        PerelTrains.getLogger().info("onDataPacket " + pkt.getPos());
         if (net.getNetHandler() instanceof INetHandlerPlayClient) {
-            PerelTrains.getLogger().info("reallyGonnaProcess " + pkt.getPos());
             readFromNBT(pkt.getNbtCompound());
         }
     }
@@ -209,7 +269,7 @@ public class TileEntityAutoRailBase extends TileEntity {
 
     @Override
     public String toString() {
-        return getClass().getName() + "[segment=" + this.segment + ",pos="
+        return getClass().getSimpleName() + "[segment=" + this.segment + ",pos="
                 + getPos() + "]";
     }
 

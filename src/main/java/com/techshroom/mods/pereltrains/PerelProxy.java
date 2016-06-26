@@ -26,6 +26,7 @@ package com.techshroom.mods.pereltrains;
 
 import com.techshroom.mods.pereltrains.block.ExtendedBlock;
 import com.techshroom.mods.pereltrains.block.PerelBlocks;
+import com.techshroom.mods.pereltrains.block.entity.TileEntityAutoRailBase;
 
 public class PerelProxy {
 
@@ -49,6 +50,7 @@ public class PerelProxy {
 
     public void onPreInit() {
         PerelBlocks.registerBlocks();
+        TileEntityAutoRailBase.addHooks();
     }
 
     public void onInit() {

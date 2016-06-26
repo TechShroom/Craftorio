@@ -25,15 +25,27 @@
             },
             "south": {
                 "submodel": "pereltrains:rail_signal_lights",
-                "y": 180
+                "transform": {
+                    "rotation": {
+                        "y": 180
+                    }
+                }
             },
             "east": {
                 "submodel": "pereltrains:rail_signal_lights",
-                "y": 90
+                "transform": {
+                    "rotation": {
+                        "y": 90
+                    }
+                }
             },
             "west": {
                 "submodel": "pereltrains:rail_signal_lights",
-                "y": 270
+                "transform": {
+                    "rotation": {
+                        "y": 270
+                    }
+                }
             }
         },
         "attached": {

@@ -38,7 +38,6 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumFacing.Axis;
 import net.minecraft.util.EnumFacing.AxisDirection;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3i;
 import net.minecraftforge.client.event.TextureStitchEvent;
 import net.minecraftforge.client.model.animation.FastTESR;
 import net.minecraftforge.common.MinecraftForge;
@@ -82,8 +81,6 @@ public class TESRRailSegmentDisplay extends FastTESR<TileEntityAutoRailBase> {
                 z - te.getPos().getZ());
         int id = Optional.ofNullable(te.getSegment()).map(Segment::getId)
                 .orElse(Integer.MIN_VALUE);
-        this.random.setSeed(te.getPos().toLong());
-        id = this.random.nextInt(10000);
         Color segColor = notRandomColorShift(id);
         Color lighter = segColor.brighter().brighter();
 

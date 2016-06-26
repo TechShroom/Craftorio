@@ -5,8 +5,8 @@
     "elements": [
         {
             "name": "light_top",
-            "from": [ 7.0, 10.0, 4.0 ],
-            "to": [ 9.0, 12.0, 6.0 ],
+            "from": [ 5.0, 10.0, 4.0 ],
+            "to": [ 7.0, 12.0, 6.0 ],
             "faces": {
                 "north": { "texture": "#light", "uv": [ 0.0, 0.0, 2.0, 2.0 ], "tintindex": 0 },
                 "east": { "texture": "#light", "uv": [ 0.0, 0.0, 8.0, 2.0 ], "tintindex": 0 },
@@ -18,8 +18,8 @@
         },
         {
             "name": "light_mid",
-            "from": [ 7.0, 6.0, 4.0 ],
-            "to": [ 9.0, 8.0, 6.0 ],
+            "from": [ 5.0, 6.0, 4.0 ],
+            "to": [ 7.0, 8.0, 6.0 ],
             "faces": {
                 "north": { "texture": "#light", "uv": [ 0.0, 0.0, 2.0, 2.0 ], "tintindex": 1 },
                 "east": { "texture": "#light", "uv": [ 0.0, 0.0, 8.0, 2.0 ], "tintindex": 1 },
@@ -31,8 +31,8 @@
         },
         {
             "name": "light_bot",
-            "from": [ 7.0, 2.0, 4.0 ],
-            "to": [ 9.0, 4.0, 6.0 ],
+            "from": [ 5.0, 2.0, 4.0 ],
+            "to": [ 7.0, 4.0, 6.0 ],
             "faces": {
                 "north": { "texture": "#light", "uv": [ 0.0, 0.0, 2.0, 2.0 ], "tintindex": 2 },
                 "east": { "texture": "#light", "uv": [ 0.0, 0.0, 8.0, 2.0 ], "tintindex": 2 },

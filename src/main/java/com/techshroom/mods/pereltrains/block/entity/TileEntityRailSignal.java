@@ -29,7 +29,9 @@ import com.techshroom.mods.pereltrains.block.LightValue;
 import com.techshroom.mods.pereltrains.signal.BlockingState;
 
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.world.World;
+import net.minecraft.world.chunk.Chunk.EnumCreateEntityType;
 
 public class TileEntityRailSignal extends TileEntity {
 
@@ -40,11 +42,14 @@ public class TileEntityRailSignal extends TileEntity {
 
     public void recalculateLighting() {
         World w = getWorld();
-        TileEntityAutoRailBase railAttached = (TileEntityAutoRailBase) w
-                .getTileEntity(getPos().offset(w.getBlockState(getPos())
-                        .getValue(BlockRailSignal.ATTACHED_RAIL_PROPERTY)));
+        EnumFacing attachedDir = w.getBlockState(getPos())
+                .getValue(BlockRailSignal.ATTACHED_RAIL_PROPERTY);
+        TileEntityAutoRailBase railAttached =
+                (TileEntityAutoRailBase) w.getChunkFromBlockCoords(getPos())
+                        .getTileEntity(getPos().offset(attachedDir),
+                                EnumCreateEntityType.CHECK);
         if (railAttached != null) {
-            railAttached.getSegment().addRailSignal(this);
+            railAttached.onSignalAttached(this);
         }
     }
 
