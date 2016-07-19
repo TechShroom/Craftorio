@@ -1,9 +1,0 @@
-
-itemGroup.perel=Perel Trains
-
-item.drillhead[0].name=Wooden Drillhead
-item.drillhead[1].name=Iron Drillhead
-item.drillhead[2].name=Diamond Drillhead
-
-tile.rail_signal.name=Rail Signal
-tile.normal_rail.name=Automatic Rail

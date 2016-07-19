@@ -1,7 +1,9 @@
-PerelTrains
+Craftorio
 ==========
-PerelTrains hopes to emulate the train system from Factorio in Minecraft.
-- [![Build Status](https://travis-ci.org/TechShroom/PerelTrains.svg?branch=master)](https://travis-ci.org/TechShroom/PerelTrains)
+Craftorio hopes to emulate the entirety of Factorio in Minecraft.
+
+Perhaps loading Lua mods will even be supported at some point.
+- [![Build Status](https://travis-ci.org/TechShroom/Craftorio.svg?branch=master)](https://travis-ci.org/TechShroom/Craftorio)
 
 Developing:
 ----------

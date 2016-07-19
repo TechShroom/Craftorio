@@ -47,8 +47,8 @@ util {
 }
 
 mavencfg {
-    description 'Factorio trains in Minecraft.'
-    coords 'TechShroom', 'PerelTrains'
+    description 'Factorio in Minecraft.'
+    coords 'TechShroom', 'Craftorio'
 }
 
 idea.project.languageLevel = util.javaVersion
@@ -64,7 +64,7 @@ repositories {
     }
 }
 
-archivesBaseName = "PerelTrains"
+archivesBaseName = "Craftorio"
 
 ext.configFile = file "build.properties"
 configFile.withReader {
@@ -103,10 +103,11 @@ dependencies {
 }
 
 def build_number = (System.getenv("BUILD_NUMBER") ?: null)
+def build_meta = project.config.mod.buildmeta ? "-${project.config.mod.buildmeta}" : ""
 // VERSION IS:
 // <MOD_VERSION>+<MC_VERSION>-<BUILD_META>-build<BUILD_NUMBER (if present)>
 // This ensures that it is easy to identify what MC version the mod is for
-version =  "${project.config.mod.version}+${project.config.mc.version}-${project.config.mod.buildmeta}" +
+version =  "${project.config.mod.version}+${project.config.mc.version}${build_meta}" +
                 (build_number ? "-build" + build_number : "")
 minecraft {
     version = config.mc.version + "-" + config.forge.version
@@ -114,7 +115,7 @@ minecraft {
     replace '@VERSION@': version
     replace '@MC_VERSION@': config.mc.version
     replace '@FORGE_VERSION@': config.forge.version
-    mappings "snapshot_20160604"
+    mappings "snapshot_20160719"
 }
 
 javadoc {
@@ -139,7 +140,7 @@ license {
     ignoreFailures = false
     strictCheck = true
     include '**/*.java'
-    exclude 'com/techshroom/mods/pereltrains/util/JGraphXAdapter.java'
+    exclude 'com/techshroom/mods/craftorio/util/JGraphXAdapter.java'
     mapping {
         java = 'SLASHSTAR_STYLE'
     }
