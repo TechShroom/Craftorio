@@ -27,14 +27,16 @@ buildscript {
     }
 
     dependencies {
+        classpath group: 'gradle.plugin.nl.javadude.gradle.plugins', name: 'license-gradle-plugin', version: '0.12.0'
         classpath group: 'com.github.ben-manes', name: 'gradle-versions-plugin', version: '0.12.0'
-        classpath 'net.minecraftforge.gradle:ForgeGradle:2.2-SNAPSHOT'
+        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '2.2-SNAPSHOT'
         classpath group: 'com.techshroom', name: 'Aversion', version: '2.0.1'
     }
 }
 
 apply plugin: 'net.minecraftforge.gradle.forge'
 apply plugin: 'com.github.ben-manes.versions'
+apply plugin: 'com.github.hierynomus.license'
 apply plugin: 'jacoco'
 apply plugin: 'aversion-apt'
 apply plugin: 'aversion-maven'
@@ -45,8 +47,8 @@ util {
 }
 
 mavencfg {
-    description 'Factorio trains in Minecraft.'
-    coords 'TechShroom', 'PerelTrains'
+    description 'Factorio in Minecraft.'
+    coords 'TechShroom', 'Craftorio'
 }
 
 idea.project.languageLevel = util.javaVersion
@@ -57,9 +59,12 @@ repositories {
         name "central snapshots"
         url "https://oss.sonatype.org/content/repositories/snapshots/"
     }
+    flatDir {
+       dirs 'jgraphx-built'
+    }
 }
-group = "com.techshroom"
-archivesBaseName = "PerelTrains"
+
+archivesBaseName = "Craftorio"
 
 ext.configFile = file "build.properties"
 configFile.withReader {
@@ -69,10 +74,15 @@ configFile.withReader {
 }
 
 dependencies {
-
     compile group: 'com.flowpowered', name: 'flow-math', version: '1.0.2'
     compile group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.6'
     compile group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.6'
+    compile group: 'org.jgrapht', name: 'jgrapht-core', version: '0.9.2'
+    compile(group: 'org.jgrapht', name: 'jgrapht-ext', version: '0.9.2') {
+        exclude module: 'jgraphx'
+    }
+    compile name: "jgraphx"
+    // compile group: 'jgraph', name: 'jgraph', version: '5.13.0.0'
     addAPTReqWComp group: 'com.google.guava', name: 'guava', version: '19.0'
     addAPT group: 'com.google.auto.factory', name: 'auto-factory', version: '1.0-SNAPSHOT'
     addAPT group: 'com.google.auto.service', name: 'auto-service', version: '1.0-SNAPSHOT'
@@ -93,10 +103,11 @@ dependencies {
 }
 
 def build_number = (System.getenv("BUILD_NUMBER") ?: null)
+def build_meta = project.config.mod.buildmeta ? "-${project.config.mod.buildmeta}" : ""
 // VERSION IS:
 // <MOD_VERSION>+<MC_VERSION>-<BUILD_META>-build<BUILD_NUMBER (if present)>
 // This ensures that it is easy to identify what MC version the mod is for
-version =  "${project.config.mod.version}+${project.config.mc.version}-${project.config.mod.buildmeta}" +
+version =  "${project.config.mod.version}+${project.config.mc.version}${build_meta}" +
                 (build_number ? "-build" + build_number : "")
 minecraft {
     version = config.mc.version + "-" + config.forge.version
@@ -104,11 +115,35 @@ minecraft {
     replace '@VERSION@': version
     replace '@MC_VERSION@': config.mc.version
     replace '@FORGE_VERSION@': config.forge.version
-    mappings "snapshot_20160603"
+    mappings "snapshot_20160719"
 }
 
-compileJava {
+javadoc {
+    options.addStringOption('Xdoclint:none', '-quiet')
+}
+
+configure([compileJava, compileTestJava]) {
+    options.compilerArgs += ['-Xlint:all', '-Xlint:-path']
+    options.deprecation = true
+    options.encoding = 'UTF-8'
     options.incremental = true
+    options.fork = true
+}
+
+license {
+    ext {
+        name = project.name
+        organization = project.organization
+        url = project.url
+    }
+    header = rootProject.file('HEADER.txt')
+    ignoreFailures = false
+    strictCheck = true
+    include '**/*.java'
+    exclude 'com/techshroom/mods/craftorio/util/JGraphXAdapter.java'
+    mapping {
+        java = 'SLASHSTAR_STYLE'
+    }
 }
 
 jacocoTestReport {
