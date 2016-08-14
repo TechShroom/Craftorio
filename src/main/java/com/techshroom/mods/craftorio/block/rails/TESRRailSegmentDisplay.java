@@ -22,7 +22,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.techshroom.mods.craftorio.block.entity;
+package com.techshroom.mods.craftorio.block.rails;
 
 import java.awt.Color;
 import java.math.BigInteger;

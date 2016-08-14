@@ -22,18 +22,30 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.techshroom.mods.craftorio.block;
+package com.techshroom.mods.craftorio.block.rails;
 
-import java.util.Locale;
+import net.minecraft.block.properties.IProperty;
+import net.minecraft.block.properties.PropertyEnum;
+import net.minecraft.world.World;
 
-import net.minecraft.util.IStringSerializable;
+public class BlockAutoRailNormal extends BlockAutoRailBase {
 
-public enum LightValue implements IStringSerializable {
-    NONE, GREEN, YELLOW, RED;
+    private static final IProperty<RailDirection> SHAPE =
+            PropertyEnum.create("shape", RailDirection.class);
+
+    public BlockAutoRailNormal() {
+        super("normal_rail");
+    }
 
     @Override
-    public String getName() {
-        return name().toLowerCase(Locale.ENGLISH);
+    public TileEntityAutoRailNormal createNewTileEntity(World worldIn,
+            int meta) {
+        return new TileEntityAutoRailNormal();
+    }
+
+    @Override
+    public IProperty<RailDirection> getShapeProperty() {
+        return SHAPE;
     }
 
 }

@@ -22,7 +22,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.techshroom.mods.craftorio.block.entity;
+package com.techshroom.mods.craftorio.block.rails;
 
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -33,7 +33,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.techshroom.mods.craftorio.CraftorioMod;
-import com.techshroom.mods.craftorio.block.BlockRailSignal;
 import com.techshroom.mods.craftorio.block.CraftorioBlocks;
 import com.techshroom.mods.craftorio.segment.Segment;
 import com.techshroom.mods.craftorio.util.GeneralUtility;

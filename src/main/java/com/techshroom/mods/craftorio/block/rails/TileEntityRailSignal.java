@@ -22,15 +22,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.techshroom.mods.craftorio.block.entity;
+package com.techshroom.mods.craftorio.block.rails;
 
 import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import com.techshroom.mods.craftorio.block.BlockRailSignal;
-import com.techshroom.mods.craftorio.block.LightValue;
 import com.techshroom.mods.craftorio.signal.BlockingState;
 import com.techshroom.mods.craftorio.util.GeneralUtility;
 

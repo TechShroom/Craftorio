@@ -34,8 +34,8 @@ import java.util.Set;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
-import com.techshroom.mods.craftorio.block.entity.TileEntityAutoRailBase;
-import com.techshroom.mods.craftorio.block.entity.TileEntityRailSignal;
+import com.techshroom.mods.craftorio.block.rails.TileEntityAutoRailBase;
+import com.techshroom.mods.craftorio.block.rails.TileEntityRailSignal;
 import com.techshroom.mods.craftorio.signal.BlockingState;
 
 /**

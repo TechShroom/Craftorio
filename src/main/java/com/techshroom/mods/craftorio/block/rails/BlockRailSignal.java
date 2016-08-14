@@ -22,7 +22,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.techshroom.mods.craftorio.block;
+package com.techshroom.mods.craftorio.block.rails;
 
 import java.util.Map;
 
@@ -30,7 +30,8 @@ import javax.annotation.Nullable;
 
 import com.google.common.collect.ImmutableMap;
 import com.techshroom.mods.craftorio.Constants;
-import com.techshroom.mods.craftorio.block.entity.TileEntityRailSignal;
+import com.techshroom.mods.craftorio.block.CraftorioBlocks;
+import com.techshroom.mods.craftorio.block.ExtendedBlock;
 import com.techshroom.mods.craftorio.util.BlockLocator;
 import com.techshroom.mods.craftorio.util.GeneralUtility;
 
@@ -79,7 +80,7 @@ public class BlockRailSignal extends ExtendedBlock
         AABBS = map.build();
     }
 
-    protected BlockRailSignal() {
+    public BlockRailSignal() {
         super(Material.IRON, "rail_signal");
         IBlockState defaultState = getDefaultState();
         setDefaultState(defaultState.withProperty(FACING_PRORERTY,

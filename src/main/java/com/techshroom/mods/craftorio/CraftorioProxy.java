@@ -24,10 +24,10 @@
  */
 package com.techshroom.mods.craftorio;
 
-import com.techshroom.mods.craftorio.block.ExtendedBlock;
 import com.techshroom.mods.craftorio.block.CraftorioBlocks;
-import com.techshroom.mods.craftorio.block.entity.TileEntityAutoRailBase;
-import com.techshroom.mods.craftorio.block.entity.TileEntityRailSignal;
+import com.techshroom.mods.craftorio.block.ExtendedBlock;
+import com.techshroom.mods.craftorio.block.rails.TileEntityAutoRailBase;
+import com.techshroom.mods.craftorio.block.rails.TileEntityRailSignal;
 
 public class CraftorioProxy {
 

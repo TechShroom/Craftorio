@@ -22,32 +22,9 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.techshroom.mods.craftorio.block;
+package com.techshroom.mods.craftorio.block.rails;
 
-import com.techshroom.mods.craftorio.block.entity.TileEntityAutoRailNormal;
 
-import net.minecraft.block.properties.IProperty;
-import net.minecraft.block.properties.PropertyEnum;
-import net.minecraft.world.World;
-
-public class BlockAutoRailNormal extends BlockAutoRailBase {
-
-    private static final IProperty<RailDirection> SHAPE =
-            PropertyEnum.create("shape", RailDirection.class);
-
-    protected BlockAutoRailNormal() {
-        super("normal_rail");
-    }
-
-    @Override
-    public TileEntityAutoRailNormal createNewTileEntity(World worldIn,
-            int meta) {
-        return new TileEntityAutoRailNormal();
-    }
-
-    @Override
-    public IProperty<RailDirection> getShapeProperty() {
-        return SHAPE;
-    }
+public class TileEntityAutoRailNormal extends TileEntityAutoRailBase {
 
 }

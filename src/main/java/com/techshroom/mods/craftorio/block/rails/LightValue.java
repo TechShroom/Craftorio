@@ -22,9 +22,18 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.techshroom.mods.craftorio.block.entity;
+package com.techshroom.mods.craftorio.block.rails;
 
+import java.util.Locale;
 
-public class TileEntityAutoRailNormal extends TileEntityAutoRailBase {
+import net.minecraft.util.IStringSerializable;
+
+public enum LightValue implements IStringSerializable {
+    NONE, GREEN, YELLOW, RED;
+
+    @Override
+    public String getName() {
+        return name().toLowerCase(Locale.ENGLISH);
+    }
 
 }

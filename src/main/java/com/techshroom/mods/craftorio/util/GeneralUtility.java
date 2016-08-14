@@ -27,8 +27,11 @@ package com.techshroom.mods.craftorio.util;
 import java.awt.Color;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
+
+import javax.annotation.Nullable;
 
 import com.techshroom.mods.craftorio.Constants;
 
@@ -37,12 +40,15 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagIntArray;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.items.CapabilityItemHandler;
+import net.minecraftforge.items.IItemHandler;
 
 public final class GeneralUtility {
 
@@ -301,6 +307,12 @@ public final class GeneralUtility {
         }
 
         return p;
+    }
+
+    public static Optional<IItemHandler> itemHandler(World world, BlockPos pos, @Nullable EnumFacing facing) {
+        TileEntity entity = world.getTileEntity(pos);
+        return Optional.ofNullable(entity).map(e -> e.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY,
+                facing == null ? null : facing.getOpposite()));
     }
 
 }

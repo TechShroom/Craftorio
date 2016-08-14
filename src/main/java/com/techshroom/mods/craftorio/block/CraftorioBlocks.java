@@ -29,8 +29,13 @@ import java.awt.Color;
 import javax.annotation.Nullable;
 
 import com.techshroom.mods.craftorio.Constants;
-import com.techshroom.mods.craftorio.block.entity.TileEntityAutoRailNormal;
-import com.techshroom.mods.craftorio.block.entity.TileEntityRailSignal;
+import com.techshroom.mods.craftorio.block.inserters.BlockRegularInserter;
+import com.techshroom.mods.craftorio.block.inserters.TileEntityInserter;
+import com.techshroom.mods.craftorio.block.rails.BlockAutoRailNormal;
+import com.techshroom.mods.craftorio.block.rails.BlockRailSignal;
+import com.techshroom.mods.craftorio.block.rails.LightValue;
+import com.techshroom.mods.craftorio.block.rails.TileEntityAutoRailNormal;
+import com.techshroom.mods.craftorio.block.rails.TileEntityRailSignal;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.properties.IProperty;
@@ -57,19 +62,23 @@ public final class CraftorioBlocks {
     };
 
     public static final BlockRailSignal RAIL_SIGNAL = new BlockRailSignal();
-    public static final BlockAutoRailNormal NORMAL_RAIL =
-            new BlockAutoRailNormal();
+    public static final BlockAutoRailNormal NORMAL_RAIL = new BlockAutoRailNormal();
+    public static final BlockRegularInserter REGULAR_INSERTER = new BlockRegularInserter();
 
     public static void registerBlocks() {
         register(RAIL_SIGNAL, "rail_signal", TileEntityRailSignal.class);
         register(NORMAL_RAIL, "normal_rail", TileEntityAutoRailNormal.class);
+        register(REGULAR_INSERTER, "inserter.regular");
+        
+        // Register inserter tile as it's own thing
+        GameRegistry.registerTileEntity(TileEntityInserter.class, "inserter");
     }
 
     public static void loadColorHandlers() {
-        Minecraft.getMinecraft().getBlockColors().registerBlockColorHandler(
-                CraftorioBlocks::signalColorHandler, RAIL_SIGNAL);
-        Minecraft.getMinecraft().getItemColors().registerItemColorHandler(
-                CraftorioBlocks::signalColorHandler, RAIL_SIGNAL);
+        Minecraft.getMinecraft().getBlockColors().registerBlockColorHandler(CraftorioBlocks::signalColorHandler,
+                RAIL_SIGNAL);
+        Minecraft.getMinecraft().getItemColors().registerItemColorHandler(CraftorioBlocks::signalColorHandler,
+                RAIL_SIGNAL);
     }
 
     private static int onColor(Color c) {
@@ -87,12 +96,11 @@ public final class CraftorioBlocks {
     private static final int GREEN_ON = onColor(Color.GREEN);
     private static final int GREEN_OFF = offColor(Color.GREEN);
 
-    private static int signalColorHandler(IBlockState state,
-            @Nullable IBlockAccess worldIn, @Nullable BlockPos pos,
-            int tintIndex) {
+    private static int
+            signalColorHandler(IBlockState state, @Nullable IBlockAccess worldIn, @Nullable BlockPos pos, int tintIndex) {
         return getTintIndex(state, tintIndex);
     }
-    
+
     private static int signalColorHandler(ItemStack stack, int tintIndex) {
         // Probably an ItemBlock
         if (stack.getItem() instanceof ItemBlock) {
@@ -102,8 +110,7 @@ public final class CraftorioBlocks {
         }
     }
 
-    private static int signalColorHandler(ItemBlock item, int metadata,
-            int tintIndex) {
+    private static int signalColorHandler(ItemBlock item, int metadata, int tintIndex) {
         @SuppressWarnings("deprecation")
         IBlockState state = item.block.getStateFromMeta(metadata);
         return getTintIndex(state, tintIndex);
@@ -134,19 +141,16 @@ public final class CraftorioBlocks {
                 return propCast;
             }
         }
-        throw new IllegalStateException(
-                "State " + state + " has no light property!");
+        throw new IllegalStateException("State " + state + " has no light property!");
     }
 
     private static void register(Block block, String name) {
         block.setCreativeTab(TAB);
         GameRegistry.register(block.setRegistryName(Constants.MOD_ID, name));
-        GameRegistry.register(
-                new ItemBlock(block).setRegistryName(Constants.MOD_ID, name));
+        GameRegistry.register(new ItemBlock(block).setRegistryName(Constants.MOD_ID, name));
     }
 
-    private static void register(Block block, String name,
-            Class<? extends TileEntity> tileClass) {
+    private static void register(Block block, String name, Class<? extends TileEntity> tileClass) {
         register(block, name);
         GameRegistry.registerTileEntity(tileClass, name);
     }

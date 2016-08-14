@@ -22,7 +22,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.techshroom.mods.craftorio.block;
+package com.techshroom.mods.craftorio.block.rails;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,8 +30,7 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 import com.techshroom.mods.craftorio.CraftorioMod;
-import com.techshroom.mods.craftorio.block.entity.TESRRailSegmentDisplay;
-import com.techshroom.mods.craftorio.block.entity.TileEntityAutoRailBase;
+import com.techshroom.mods.craftorio.block.ExtendedBlock;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.ITileEntityProvider;
